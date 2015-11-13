@@ -8,6 +8,7 @@ public class SlaveMain {
 		String masterHost = args[0];
 		String dfsRootFolder = args[1];
 		int slaveId = Integer.parseInt(args[2]);
+		System.out.println("SlaveMain.main()");
 		
 		// Create slave and register it (registration name must be "slave" + slave identifier)
 		
