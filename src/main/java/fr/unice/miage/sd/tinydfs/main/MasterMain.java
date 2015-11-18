@@ -21,8 +21,8 @@ public class MasterMain {
 		// Create master and register it
 		Master objMaster= new MasterImpl();
 		Registry registry = LocateRegistry.createRegistry(1099);
-		registry.bind("masterService", objMaster);
-		   System.out.println("Master prêt et disponible à l'adresse [hostname]/masterService");
+		registry.bind(storageServiceName, objMaster);
+		   System.out.println("Master prêt et disponible à l'adresse [hostname]/"+storageServiceName);
 
 		
 	}
