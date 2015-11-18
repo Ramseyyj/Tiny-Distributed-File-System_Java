@@ -5,19 +5,76 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 public interface Slave extends Remote {
-
+	//Champs
+	/*
+	 * Id du slave : private Integer id
+	 * Right slave : private Slave rightSlave (initialized to null)
+	 * Left Slave : private Slave leftSlave (initialized to null)
+	 * Data File saved : private List<File> file
+	 */
+	
+	//Constructeurs
+	/*public Slave(Integer id)
+	 * Initialise les fields
+	 * Create folder ~/.slave(ID) --> check if exists, ... 
+	*/
+	
+	//Méthodes
+	
+	
+	/**
+	 * Get the id of the Slave
+	 * @return Integer id
+	 * @throws RemoteException
+	 */
 	public int getId() throws RemoteException;
 	
+	/**
+	 * Get the left Slave of this Slave
+	 * @return Slave leftSlave
+	 * @throws RemoteException
+	 */
 	public Slave getLeftSlave() throws RemoteException;
 	
+	/**
+	 * Get the right Slave of this Slave
+	 * @return Slave rightSlave
+	 * @throws RemoteException
+	 */
 	public Slave getRightSlave()  throws RemoteException;
 
+	/**
+	 * Set the left Slave
+	 * @param Slave slave
+	 * @throws RemoteException
+	 */
 	public void setLeftSlave(Slave slave) throws RemoteException;
 
+	/**
+	 * Set the right Slave
+	 * @param Slave slave
+	 * @throws RemoteException
+	 */
 	public void setRightSlave(Slave slave) throws RemoteException;
 	
+	/**
+	 * Save data in the slave  
+	 * If right/leftSlave is null, then register the List of byte in a file on the disk (on a folder ~/.slave(ID) )
+	 * If not null : divide the array by 3, save the 2nd part here, save the 1st and the 3rd part in each of son slave
+	 * @param String filename
+	 * @param List<byte[]> subFileContent
+	 * @throws RemoteException
+	 */
 	public void subSave(String filename, List<byte[]> subFileContent) throws RemoteException;
 
+	/**
+	 * For a node Slave, return all the data from all his children
+	 * if right/left slave is null, return the content of the hashmap at the key file name
+	 * else acces to subfile of the node, assembly with his own subfile, and return everything
+	 * @param filename
+	 * @return List<byte> subFile 
+	 * @throws RemoteException
+	 */
 	public List<byte[]> subRetrieve(String filename) throws RemoteException;
 
 }
