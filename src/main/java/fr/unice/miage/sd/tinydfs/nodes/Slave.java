@@ -8,15 +8,16 @@ public interface Slave extends Remote {
 	//Champs
 	/*
 	 * Id du slave : private Integer id
+	 * dossier tampon : private File dfsRootFolder
 	 * Right slave : private Slave rightSlave (initialized to null)
 	 * Left Slave : private Slave leftSlave (initialized to null)
-	 * Data File saved : private List<File> file
+	 * 
 	 */
 	
 	//Constructeurs
-	/*public Slave(Integer id)
+	/*public Slave(Integer id, String dfsRootFolder)
 	 * Initialise les fields
-	 * Create folder ~/.slave(ID) --> check if exists, ... 
+	 *  
 	*/
 	
 	//Méthodes
@@ -58,9 +59,10 @@ public interface Slave extends Remote {
 	public void setRightSlave(Slave slave) throws RemoteException;
 	
 	/**
-	 * Save data in the slave  
-	 * If right/leftSlave is null, then register the List of byte in a file on the disk (on a folder ~/.slave(ID) )
-	 * If not null : divide the array by 3, save the 2nd part here, save the 1st and the 3rd part in each of son slave
+	 * Save data in the slave
+	 * Si le fichier existe déjà, alors on le remplace  
+	 * If right/leftSlave is null, then register the unique byte[] in the list in a file on the disk (on a folder ~/.slave(ID) )
+	 * If not null : choisir un pivot dans la liste, enregistrer le pivot sur disque, envoyer les deux listes obtenus à droite et à gauche
 	 * @param String filename
 	 * @param List<byte[]> subFileContent
 	 * @throws RemoteException
@@ -69,7 +71,7 @@ public interface Slave extends Remote {
 
 	/**
 	 * For a node Slave, return all the data from all his children
-	 * if right/left slave is null, return the content of the hashmap at the key file name
+	 * if right/left slave is null, return the content of the file (null if does'nt exist)
 	 * else acces to subfile of the node, assembly with his own subfile, and return everything
 	 * @param filename
 	 * @return List<byte> subFile 

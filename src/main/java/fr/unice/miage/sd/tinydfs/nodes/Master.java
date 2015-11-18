@@ -7,12 +7,14 @@ import java.rmi.RemoteException;
 public interface Master extends Remote {
 	//Fields
 	/*
-	 * Répertoire tampon (voir sujet) : private String DfsRootFolder
-	 * Nombre de slave : private static Integer nbSlaves (initialized to null)
+	 * Répertoire tampon (voir sujet) : private File DfsRootFolder
+	 * Nombre de slave : private Integer nbSlaves (initialized to null)
+	 * Tableau de référence : Slave[] slave
 	 */
 	
 	//constructors
-	/*public Master()
+	/*public Master(String dfsRootFolder, int nbSlave  )
+	 * initialized the field
 	 * 
 	 */
 	
@@ -65,5 +67,12 @@ public interface Master extends Remote {
 	 * @throws RemoteException
 	 */
 	public byte[] retrieveBytes(String filename) throws RemoteException;
+	
+	/**
+	 * Register a slave into the master
+	 * @param Slave slave
+	 * @throws RemoteException
+	 */
+	public void register(Slave slave) throws RemoteException;
 	
 }

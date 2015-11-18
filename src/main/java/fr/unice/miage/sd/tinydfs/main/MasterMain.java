@@ -22,7 +22,7 @@ public class MasterMain {
 		Master objMaster= new MasterImpl();
 		Registry registry = LocateRegistry.createRegistry(1099);
 		registry.bind(storageServiceName, objMaster);
-		   System.out.println("Master prêt et disponible à l'adresse [hostname]/"+storageServiceName);
+		System.out.println("Master prêt et disponible à l'adresse [hostname]/"+storageServiceName);
 
 		
 	}
