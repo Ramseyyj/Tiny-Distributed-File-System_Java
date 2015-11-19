@@ -19,7 +19,7 @@ public class MasterMain {
 		int nbSlaves = Integer.parseInt(args[2]);
 		
 		// Create master and register it
-		Master objMaster= new MasterImpl();
+		Master objMaster= new MasterImpl(dfsRootFolder, nbSlaves);
 		Registry registry = LocateRegistry.createRegistry(1099);
 		registry.bind(storageServiceName, objMaster);
 		System.out.println("Master prêt et disponible à l'adresse [hostname]/"+storageServiceName);
