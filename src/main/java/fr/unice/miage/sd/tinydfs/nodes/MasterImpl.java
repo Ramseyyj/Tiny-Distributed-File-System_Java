@@ -46,9 +46,4 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		return null;
 	}
 
-	@Override
-	public void register(Slave slave) throws RemoteException {
-		// TODO Auto-generated method stub
-		
-	}
 }
