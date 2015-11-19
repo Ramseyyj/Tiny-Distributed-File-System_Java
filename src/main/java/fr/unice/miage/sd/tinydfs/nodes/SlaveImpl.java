@@ -47,7 +47,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 	@Override
 	public void setRightSlave(Slave slave) throws RemoteException {
-		rightSlave = rightSlave;
+		rightSlave = slave;
 	}
 
 	@Override
