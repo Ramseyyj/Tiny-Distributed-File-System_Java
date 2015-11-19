@@ -1,5 +1,12 @@
 package fr.unice.miage.sd.tinydfs.nodes;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
@@ -8,14 +15,14 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 	private int idSlave;
 	private String dfsRootFolder;
-	private Slave leftSlave;
+	private Slave leftSlave =null;
 	private Slave rightSlave;
 
 	public SlaveImpl(int id, String dfsRootFolder) throws RemoteException {
 		super();
-		this.dfsRootFolder=dfsRootFolder;
-		idSlave=id;
-		
+		this.dfsRootFolder = dfsRootFolder;
+		idSlave = id;
+
 	}
 
 	@Override
@@ -49,27 +56,45 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 		int middleList = (int) Math.floor(subFileContent.size() / 2);
 		subFileContent.get(middleList);
-		subSavedisk(filename, subFileContent.get(middleList));
+		try {
+			subSavedisk(filename, subFileContent.get(middleList));
+		} catch (IOException e) {
+			System.err.println("Erreur d'écriture du fichier " + filename);
+			e.printStackTrace();
+		}
 		if (subFileContent.size() > 1) {
 			leftSlave.subSave(filename, subFileContent.subList(0, middleList));
 			rightSlave.subSave(filename, subFileContent.subList(0, middleList + 1));
 		}
 	}
-	private void subSavedisk(String filename, byte[] FileContent)
-	{
+
+	private void subSavedisk(String filename, byte[] fileContent) throws IOException {
+		FileOutputStream stream = new FileOutputStream(dfsRootFolder + File.separator + filename);
+		stream.write(fileContent);
+		stream.close();
+	}
+
+	private byte[] subRetireveDisk(String filename) {
+		Path path = Paths.get(dfsRootFolder + File.separator + filename);
+		byte[] data = null;
+		try {
+			data = Files.readAllBytes(path);
+		} catch (IOException e) {
+			System.err.println("Erreur de lecture du fichier "+dfsRootFolder + File.separator + filename);
+			e.printStackTrace();
+		}
+		return data;
 		
 	}
-	private byte[] subRetireveDisk(String filename)
-	{
-		return null;
-	}
+
 	@Override
 	public List<byte[]> subRetrieve(String filename) throws RemoteException {
 		List<byte[]> responsableList = leftSlave.subRetrieve(filename);
+
 		responsableList.add(subRetireveDisk(filename));
 		responsableList.addAll(rightSlave.subRetrieve(filename));
 		return responsableList;
-	
+
 	}
 
 }
