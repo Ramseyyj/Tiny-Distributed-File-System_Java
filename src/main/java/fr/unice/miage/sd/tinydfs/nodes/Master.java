@@ -68,11 +68,4 @@ public interface Master extends Remote {
 	 */
 	public byte[] retrieveBytes(String filename) throws RemoteException;
 	
-	/**
-	 * Register a slave into the master
-	 * @param Slave slave
-	 * @throws RemoteException
-	 */
-	public void register(Slave slave) throws RemoteException;
-	
 }
