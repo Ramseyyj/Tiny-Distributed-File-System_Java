@@ -6,49 +6,70 @@ import java.util.List;
 
 public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
-	public SlaveImpl() throws RemoteException {
+	private int idSlave;
+	private String dfsRootFolder;
+	private Slave leftSlave;
+	private Slave rightSlave;
+
+	public SlaveImpl(int id, String dfsRootFolder) throws RemoteException {
 		super();
+		this.dfsRootFolder=dfsRootFolder;
+		idSlave=id;
+		
 	}
+
 	@Override
 	public int getId() throws RemoteException {
-		// TODO Auto-generated method stub
-		return 0;
+		return idSlave;
 	}
 
 	@Override
 	public Slave getLeftSlave() throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		return leftSlave;
 	}
 
 	@Override
 	public Slave getRightSlave() throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		return rightSlave;
 	}
 
 	@Override
 	public void setLeftSlave(Slave slave) throws RemoteException {
-		// TODO Auto-generated method stub
-		
+		leftSlave = slave;
 	}
 
 	@Override
 	public void setRightSlave(Slave slave) throws RemoteException {
-		// TODO Auto-generated method stub
-		
+		rightSlave = rightSlave;
 	}
 
 	@Override
 	public void subSave(String filename, List<byte[]> subFileContent) throws RemoteException {
 		// TODO Auto-generated method stub
+
+		int middleList = (int) Math.floor(subFileContent.size() / 2);
+		subFileContent.get(middleList);
+		subSavedisk(filename, subFileContent.get(middleList));
+		if (subFileContent.size() > 1) {
+			leftSlave.subSave(filename, subFileContent.subList(0, middleList));
+			rightSlave.subSave(filename, subFileContent.subList(0, middleList + 1));
+		}
+	}
+	private void subSavedisk(String filename, byte[] FileContent)
+	{
 		
 	}
-
+	private byte[] subRetireveDisk(String filename)
+	{
+		return null;
+	}
 	@Override
 	public List<byte[]> subRetrieve(String filename) throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		List<byte[]> responsableList = leftSlave.subRetrieve(filename);
+		responsableList.add(subRetireveDisk(filename));
+		responsableList.addAll(rightSlave.subRetrieve(filename));
+		return responsableList;
+	
 	}
 
 }
