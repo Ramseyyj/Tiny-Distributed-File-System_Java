@@ -20,7 +20,7 @@ public class SlaveMain {
 		System.out.println("SlaveMain.main()");
 		
 		// Create slave and register it (registration name must be "slave" + slave identifier)
-		Slave objSlave= new SlaveImpl();
+		Slave objSlave= new SlaveImpl(slaveId, dfsRootFolder);
 		Registry registry = LocateRegistry.getRegistry(1099);
 		registry.bind("slave"+slaveId, objSlave);
 		System.out.println("slave"+slaveId + " enregistré dans le RMI");
