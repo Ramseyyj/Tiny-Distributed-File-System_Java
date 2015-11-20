@@ -77,6 +77,8 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		List<byte[]> divideFile = getMultipleByteArray(fileContent, this.getNbSlaves());
 		List<byte[]> forLeftSlave;
 		List<byte[]> forRightSlave;
+		int middleList = (int) Math.floor(divideFile.size() / 2);
+		
 	}
 
 	@Override
@@ -118,6 +120,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 			try {
 				slave[i-1].setLeftSlave(slave[(2*i)-1]);
 				slave[i-1].setRightSlave(slave[2*i]);
+				i++;
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}

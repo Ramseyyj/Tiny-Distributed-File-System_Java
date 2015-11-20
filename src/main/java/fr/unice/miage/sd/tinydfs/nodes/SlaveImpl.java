@@ -1,7 +1,6 @@
 package fr.unice.miage.sd.tinydfs.nodes;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,7 +21,6 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		super();
 		this.dfsRootFolder = dfsRootFolder;
 		idSlave = id;
-
 	}
 
 	@Override
