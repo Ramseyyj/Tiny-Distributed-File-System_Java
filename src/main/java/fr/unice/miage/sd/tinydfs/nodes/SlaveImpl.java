@@ -21,7 +21,6 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		super();
 		this.dfsRootFolder = dfsRootFolder;
 		idSlave = id;
-
 	}
 
 	@Override
@@ -51,8 +50,6 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 	@Override
 	public void subSave(String filename, List<byte[]> subFileContent) throws RemoteException {
-		// TODO Auto-generated method stub
-
 		int sizeList,middleList;
 		middleList=(sizeList=subFileContent.size())/2;
 		try {
@@ -83,7 +80,6 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 			e.printStackTrace();
 		}
 		return data;
-		
 	}
 
 	@Override
@@ -91,11 +87,10 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		List<byte[]> responsableList = leftSlave.subRetrieve(filename);
 		if(leftSlave!=null)
 		{
-		responsableList.add(subRetireveDisk(idSlave+filename));
-		responsableList.addAll(rightSlave.subRetrieve(filename));
+			responsableList.add(subRetireveDisk(idSlave+filename));
+			responsableList.addAll(rightSlave.subRetrieve(filename));
 		}
 		return responsableList;
-
 	}
 
 }
