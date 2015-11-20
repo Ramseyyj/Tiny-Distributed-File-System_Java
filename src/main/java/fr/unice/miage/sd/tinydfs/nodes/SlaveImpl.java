@@ -54,7 +54,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	public void subSave(String filename, List<byte[]> subFileContent) throws RemoteException {
 		// TODO Auto-generated method stub
 
-		int middleList = (int) Math.floor(subFileContent.size() / 2);
+		int middleList = subFileContent.size() / 2;
 		try {
 			subSavedisk(idSlave+filename, subFileContent.get(middleList));
 		} catch (IOException e) {
