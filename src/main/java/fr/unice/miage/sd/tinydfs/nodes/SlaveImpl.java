@@ -14,8 +14,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 	private int idSlave;
 	private String dfsRootFolder;
-	private Slave leftSlave =null;
-	private Slave rightSlave;
+	private Slave leftSlave,rightSlave;
 
 	public SlaveImpl(int id, String dfsRootFolder) throws RemoteException {
 		super();
@@ -50,23 +49,21 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 	@Override
 	public void subSave(String filename, List<byte[]> subFileContent) throws RemoteException {
-		// TODO Auto-generated method stub
-
-		int middleList = (int) Math.floor(subFileContent.size() / 2);
-		subFileContent.get(middleList);
+		int sizeList,middleList;
+		middleList=(sizeList=subFileContent.size())/2;
 		try {
-			subSavedisk(filename, subFileContent.get(middleList));
+			subSaveDisk(idSlave+filename, subFileContent.get(middleList));
 		} catch (IOException e) {
-			System.err.println("Erreur d'écriture du fichier " + filename);
+			System.err.println("Erreur d'écriture du fichier " + idSlave+filename);
 			e.printStackTrace();
 		}
-		if (subFileContent.size() > 1) {
+		if (middleList != 0) {
 			leftSlave.subSave(filename, subFileContent.subList(0, middleList));
-			rightSlave.subSave(filename, subFileContent.subList(0, middleList + 1));
+			rightSlave.subSave(filename, subFileContent.subList(middleList + 1,sizeList));
 		}
 	}
 
-	private void subSavedisk(String filename, byte[] fileContent) throws IOException {
+	private void subSaveDisk(String filename, byte[] fileContent) throws IOException {
 		FileOutputStream stream = new FileOutputStream(dfsRootFolder + File.separator + filename);
 		stream.write(fileContent);
 		stream.close();
@@ -82,17 +79,19 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 			e.printStackTrace();
 		}
 		return data;
-		
 	}
 
 	@Override
 	public List<byte[]> subRetrieve(String filename) throws RemoteException {
-		List<byte[]> responsableList = leftSlave.subRetrieve(filename);
-
-		responsableList.add(subRetireveDisk(filename));
-		responsableList.addAll(rightSlave.subRetrieve(filename));
-		return responsableList;
-
+		if(leftSlave!=null)
+		{
+			List<byte[]> responsableList = leftSlave.subRetrieve(filename);
+			responsableList.add(subRetireveDisk(idSlave+filename));
+			responsableList.addAll(rightSlave.subRetrieve(filename));
+			return responsableList;
+		}
+		else {
+			return Arrays.asList(subRetireveDisk(idSlave+filename));
+		}
 	}
-
 }
