@@ -15,8 +15,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 	private int idSlave;
 	private String dfsRootFolder;
-	private Slave leftSlave =null;
-	private Slave rightSlave;
+	private Slave leftSlave,rightSlave;
 
 	public SlaveImpl(int id, String dfsRootFolder) throws RemoteException {
 		super();
