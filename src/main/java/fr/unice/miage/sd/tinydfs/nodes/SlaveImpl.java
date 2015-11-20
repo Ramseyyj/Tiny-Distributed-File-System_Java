@@ -54,20 +54,21 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	public void subSave(String filename, List<byte[]> subFileContent) throws RemoteException {
 		// TODO Auto-generated method stub
 
-		int middleList = subFileContent.size() / 2;
+		int sizeList,middleList;
+		middleList=(sizeList=subFileContent.size())/2;
 		try {
-			subSavedisk(idSlave+filename, subFileContent.get(middleList));
+			subSaveDisk(idSlave+filename, subFileContent.get(middleList));
 		} catch (IOException e) {
 			System.err.println("Erreur d'écriture du fichier " + idSlave+filename);
 			e.printStackTrace();
 		}
-		if (subFileContent.size() > 1) {
+		if (middleList != 0) {
 			leftSlave.subSave(filename, subFileContent.subList(0, middleList));
-			rightSlave.subSave(filename, subFileContent.subList(0, middleList + 1));
+			rightSlave.subSave(filename, subFileContent.subList(middleList + 1,sizeList));
 		}
 	}
 
-	private void subSavedisk(String filename, byte[] fileContent) throws IOException {
+	private void subSaveDisk(String filename, byte[] fileContent) throws IOException {
 		FileOutputStream stream = new FileOutputStream(dfsRootFolder + File.separator + filename);
 		stream.write(fileContent);
 		stream.close();
