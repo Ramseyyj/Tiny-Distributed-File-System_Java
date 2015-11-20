@@ -84,13 +84,15 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 	@Override
 	public List<byte[]> subRetrieve(String filename) throws RemoteException {
-		List<byte[]> responsableList = leftSlave.subRetrieve(filename);
 		if(leftSlave!=null)
 		{
+			List<byte[]> responsableList = leftSlave.subRetrieve(filename);
 			responsableList.add(subRetireveDisk(idSlave+filename));
 			responsableList.addAll(rightSlave.subRetrieve(filename));
+			return responsableList;
 		}
-		return responsableList;
+		else {
+			return Arrays.asList(subRetireveDisk(idSlave+filename));
+		}
 	}
-
 }
