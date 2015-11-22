@@ -1,12 +1,11 @@
 package fr.unice.miage.sd.tinydfs.main;
 
+import java.net.MalformedURLException;
 import java.rmi.AlreadyBoundException;
+import java.rmi.Naming;
+import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 
-import fr.unice.miage.sd.tinydfs.nodes.Master;
-import fr.unice.miage.sd.tinydfs.nodes.MasterImpl;
 import fr.unice.miage.sd.tinydfs.nodes.Slave;
 import fr.unice.miage.sd.tinydfs.nodes.SlaveImpl;
 
@@ -17,12 +16,16 @@ public class SlaveMain {
 		String masterHost = args[0];
 		String dfsRootFolder = args[1];
 		int slaveId = Integer.parseInt(args[2]);
-		System.out.println("SlaveMain.main()");
 		
 		// Create slave and register it (registration name must be "slave" + slave identifier)
 		Slave objSlave= new SlaveImpl(slaveId, dfsRootFolder);
-		Registry registry = LocateRegistry.getRegistry(1099);
-		registry.bind("slave"+slaveId, objSlave);
+		try {
+			String url = "rmi://" + masterHost + "/slave" + slaveId;
+			Naming.rebind(url, objSlave);
+		} catch (MalformedURLException e) {
+			System.err.println("Error :\n");
+			e.printStackTrace();
+		}
 		System.out.println("slave"+slaveId + " enregistré dans le RMI");
 
 	}

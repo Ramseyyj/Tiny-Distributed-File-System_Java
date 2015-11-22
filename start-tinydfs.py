@@ -34,7 +34,7 @@ def kill_tinydfs_processes():
 					done = False
 				if process_id != 0:
 					command = 'kill -9 ' + str(process_id)
-					print '[script] Running command: ' + command
+					print "[script] Running command: "+ command
 					os.system(command)
 					done = True
 				
