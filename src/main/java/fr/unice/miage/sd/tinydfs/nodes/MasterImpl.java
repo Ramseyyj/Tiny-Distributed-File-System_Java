@@ -26,15 +26,10 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 	private Slave rightSlave;
 	private Slave leftSlave;
 
-	public MasterImpl(String dfsRootFolder, int nbSlave) throws RemoteException {
+	public MasterImpl(String dfsRootFolder, int nbSlave) throws RemoteException, WrongNbSlaveException {
 		super();
-		this.nbSlave = nbSlave;
 		if ((nbSlave + 2 & nbSlave + 1) != 0) {
-			try {
-				throw new WrongNbSlaveException(nbSlave);
-			} catch (WrongNbSlaveException e) {
-				e.printStackTrace();
-			}
+			throw new WrongNbSlaveException(nbSlave);
 		}
 		this.dfsRootFolder = dfsRootFolder;
 		this.slave = new Slave[nbSlave];
