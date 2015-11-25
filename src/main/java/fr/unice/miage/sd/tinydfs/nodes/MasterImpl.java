@@ -87,7 +87,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 	@Override
 	public File retrieveFile(String filename) throws RemoteException {
 		byte[] b = retrieveBytes(filename);
-		File res = new File(dfsRootFolder + File.pathSeparator + filename);
+		File res = new File(dfsRootFolder + File.separator + filename);
 		try {
 			if(!res.exists()) {
 				res.createNewFile();
