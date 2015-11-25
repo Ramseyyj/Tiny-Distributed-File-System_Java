@@ -28,6 +28,9 @@ public class MasterMain {
 			// Create master and register it
 			Registry registry = LocateRegistry.createRegistry(1099);
 			Master objMaster;
+			
+			
+			
 			try {
 				 objMaster = new MasterImpl(dfsRootFolder,nbSlaves);
 				 registry.bind(storageServiceName, objMaster);
