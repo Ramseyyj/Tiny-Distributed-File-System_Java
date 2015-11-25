@@ -1,9 +1,8 @@
 package fr.unice.miage.sd.tinydfs.nodes;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -16,7 +15,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import fr.unice.miage.sd.tinydfs.exceptions.DfsRootFolderNotFoundException;
 import fr.unice.miage.sd.tinydfs.exceptions.WrongNbSlaveException;
 
 public class MasterImpl extends UnicastRemoteObject implements Master {
@@ -27,16 +25,26 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 	private Slave rightSlave;
 	private Slave leftSlave;
 
-	public MasterImpl(String dfsRootFolder, int nbSlave) throws RemoteException, WrongNbSlaveException, DfsRootFolderNotFoundException {
+	public MasterImpl(String dfsRootFolder, int nbSlave) throws RemoteException, WrongNbSlaveException {
 		super();
 		if ((nbSlave + 2 & nbSlave + 1) != 0) {
 			throw new WrongNbSlaveException(nbSlave);
 		}
-		File dfsRootFolderDirectory;
 		this.dfsRootFolder = dfsRootFolder;
-		dfsRootFolderDirectory = new File(this.dfsRootFolder);
-		if(dfsRootFolderDirectory != null && !dfsRootFolderDirectory.isDirectory()) 
-			throw new DfsRootFolderNotFoundException(dfsRootFolder);
+		File dfsFileRootFolder = new File(dfsRootFolder);
+		if(!dfsFileRootFolder.exists()){
+			dfsFileRootFolder.mkdir();
+			System.out.println("Création dossier " + dfsFileRootFolder.getName());
+		}
+		else
+		{
+			File[] oldFilesSlave = dfsFileRootFolder.listFiles();
+			for (File oldFile:oldFilesSlave) {
+				System.out.println("Suppression du fichier "  + oldFile.getName());
+				oldFile.delete();
+			}
+
+		}
 		this.slave = new Slave[nbSlave];
 		this.rightSlave = null;
 		this.leftSlave = null;
@@ -79,8 +87,20 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 	@Override
 	public File retrieveFile(String filename) throws RemoteException {
 		byte[] b = retrieveBytes(filename);
-		InputStream is = new ByteArrayInputStream(b);
 		File res = new File(dfsRootFolder + File.pathSeparator + filename);
+		try {
+			if(!res.exists()) {
+				res.createNewFile();
+			} else {
+				res.delete();
+				res.createNewFile();
+			}
+			FileOutputStream fos = new FileOutputStream(res);
+			fos.write(b);
+			fos.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return res;
 	}
 

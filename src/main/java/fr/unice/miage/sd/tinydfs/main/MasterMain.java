@@ -7,7 +7,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import fr.unice.miage.sd.tinydfs.exceptions.DfsRootFolderNotFoundException;
 import fr.unice.miage.sd.tinydfs.exceptions.WrongNbSlaveException;
 import fr.unice.miage.sd.tinydfs.nodes.Master;
 import fr.unice.miage.sd.tinydfs.nodes.MasterImpl;
@@ -40,8 +39,6 @@ public class MasterMain {
 				System.err.println("Erreur: " + e.getMessage());
 			}catch (UnknownHostException e) {
 				System.err.println("Erreur: " + e.getMessage());
-			} catch (DfsRootFolderNotFoundException e) {
-				System.err.println("Erreur : " + e.getMessage());
 			}
 		}else{
 			System.out.println("ERROR NOMBRE DE PARAMETRE INCORRECT");
