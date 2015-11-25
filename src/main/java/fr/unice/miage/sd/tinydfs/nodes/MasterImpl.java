@@ -190,11 +190,10 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 				notInRangeByte--;
 			}
 			for (int j = 0; j < forSlave.length; j++) {
-				forSlave[i] = fileContent[cursor];
+				forSlave[j] = fileContent[cursor];
+				cursor++;
 			}
-			res.add(forSlave);
-			cursor++;
-			
+			res.add(forSlave);			
 		}
 		return res;
 	}
