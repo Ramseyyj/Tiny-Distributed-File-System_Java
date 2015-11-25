@@ -79,8 +79,8 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		}
 		// divide the byteArray into nbSlave byte Array
 		List<byte[]> divideFile = getMultipleByteArray(fileContent);
-		List<byte[]> forLeftSlave = divideFile.subList(0, divideFile.size()/2);
-		List<byte[]> forRightSlave = divideFile.subList(divideFile.size()/2, divideFile.size()) ;
+		List<byte[]> forLeftSlave = new ArrayList<byte[]>(divideFile.subList(0, divideFile.size()/2));
+		List<byte[]> forRightSlave = new ArrayList<byte[]>(divideFile.subList(divideFile.size()/2, divideFile.size())) ;
 		leftSlave.subSave(filename, forLeftSlave);
 		rightSlave.subSave(filename, forRightSlave);
 	}
@@ -135,7 +135,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 
 		// Contruction de l'arbre binaire
 		int i = 1;
-		while (((i+1)*2)-2<= slave.length) {
+		while (((i+1)*2)-2< slave.length) {
 			try {
 				slave[i - 1].setLeftSlave(slave[((i+1)*2)-1]);
 				slave[i - 1].setRightSlave(slave[((i+1)*2)-2]);

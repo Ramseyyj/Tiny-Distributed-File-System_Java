@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -75,8 +76,10 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 			e.printStackTrace();
 		}
 		if (middleList != 0) {
-			leftSlave.subSave(filename, subFileContent.subList(0, middleList));
-			rightSlave.subSave(filename, subFileContent.subList(middleList + 1,sizeList));
+			List<byte[]> left = new ArrayList<byte[]>(subFileContent.subList(0, middleList));
+			List<byte[]> right = new ArrayList<byte[]>(subFileContent.subList(middleList + 1, sizeList));
+			leftSlave.subSave(filename, left);
+			rightSlave.subSave(filename, right);
 		}
 	}
 
