@@ -1,8 +1,17 @@
 package fr.unice.miage.sd.tinydfs.main;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.UnknownHostException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
+
+import fr.unice.miage.sd.tinydfs.nodes.Master;
 
 public class MainTst {
 
@@ -18,14 +27,14 @@ public class MainTst {
 			System.out.println();
 		}*/
 		String path;
-		/*try {
+		try {
 			path = "rmi://" + InetAddress.getLocalHost().getHostAddress() + "/masterhost";
 			Remote r = Naming.lookup(path);
 			((Master) r).saveBytes("test", null);
 		} catch (UnknownHostException | MalformedURLException | RemoteException | NotBoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}*/
+		}
 		File test = new File("C:\\Users\\remi\\Desktop\\test123.txt");
 	}
 	

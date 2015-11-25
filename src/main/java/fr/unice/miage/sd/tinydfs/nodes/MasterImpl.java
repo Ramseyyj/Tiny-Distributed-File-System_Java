@@ -45,6 +45,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 			}
 
 		}
+		this.nbSlave=nbSlave;
 		this.slave = new Slave[nbSlave];
 		this.rightSlave = null;
 		this.leftSlave = null;
@@ -131,12 +132,6 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		// Initialisation des fils du master
 		this.leftSlave = slave[0];
 		this.rightSlave = slave[1];
-		try {
-			System.out.println(leftSlave.getId());
-		} catch (RemoteException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
 
 		// Contruction de l'arbre binaire
 		int i = 1;

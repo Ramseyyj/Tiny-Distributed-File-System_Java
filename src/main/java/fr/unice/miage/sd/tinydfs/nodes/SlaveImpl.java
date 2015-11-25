@@ -21,6 +21,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 	public SlaveImpl(int id, String dfsRootFolder) throws RemoteException {
 		super();
+		this.idSlave = id;
 		this.dfsRootFolder = dfsRootFolder;
 		File dfsFileRootFolder = new File(dfsRootFolder);
 		if(!dfsFileRootFolder.exists()){
