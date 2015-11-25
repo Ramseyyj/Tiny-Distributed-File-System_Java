@@ -2,6 +2,7 @@ package fr.unice.miage.sd.tinydfs.nodes;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,6 +11,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
@@ -21,10 +23,16 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		super();
 		this.dfsRootFolder = dfsRootFolder;
 		File dfsFileRootFolder = new File(dfsRootFolder);
-		if(dfsFileRootFolder.exists()){
-			dfsFileRootFolder.delete();
-		};
-		dfsFileRootFolder.mkdir();
+		if(!dfsFileRootFolder.exists()){
+			dfsFileRootFolder.mkdir();
+		}
+		else
+		{
+			File[] oldFilesSlave = dfsFileRootFolder.listFiles(new filterSlave());
+			for (File oldFile:oldFilesSlave) {
+				oldFile.delete();
+			}
+		}
 	}
 
 	@Override
@@ -97,5 +105,13 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		responsableList.add(subRetireveDisk(idSlave+filename));
 		responsableList.addAll(rightSlave.subRetrieve(filename));
 		return responsableList;
+	}
+	class filterSlave implements FilenameFilter {
+
+		@Override
+		public boolean accept(File folder, String name) {
+			return Pattern.compile("^"+idSlave).matcher(name).matches();
+		}
+
 	}
 }
