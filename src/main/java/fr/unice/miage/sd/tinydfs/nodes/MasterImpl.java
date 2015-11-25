@@ -120,10 +120,10 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 
 		// Contruction de l'arbre binaire
 		int i = 1;
-		while ((2 * i)+1 < slave.length) {
+		while (((i+1)*2)-2<= slave.length) {
 			try {
-				slave[i - 1].setLeftSlave(slave[(2 * i)]);
-				slave[i - 1].setRightSlave(slave[(2 * i) + 1]);
+				slave[i - 1].setLeftSlave(slave[((i+1)*2)-1]);
+				slave[i - 1].setRightSlave(slave[((i+1)*2)-2]);
 				i++;
 			} catch (RemoteException e) {
 				e.printStackTrace();
