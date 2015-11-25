@@ -137,9 +137,18 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		int i = 1;
 		while (((i+1)*2)-2< slave.length) {
 			try {
-				slave[i - 1].setLeftSlave(slave[((i+1)*2)-1]);
-				slave[i - 1].setRightSlave(slave[((i+1)*2)-2]);
+				slave[i - 1].setLeftSlave(slave[((i+1)*2)-2]);
+				slave[i - 1].setRightSlave(slave[((i+1)*2)-1]);
 				i++;
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		//A supprimer, test de construction de l'arbre
+		for (int j = 0; j < (slave.length / 2) - 1; j++) {
+			try {
+				System.out.println("Slave" + slave[j].getId() + " has for left leftSlave slave"+ slave[j].getLeftSlave().getId() + " and has for rightSlave slave" + slave[j].getRightSlave().getId());
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
