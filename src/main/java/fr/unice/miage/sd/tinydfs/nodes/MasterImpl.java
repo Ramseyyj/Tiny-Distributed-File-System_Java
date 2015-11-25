@@ -78,7 +78,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 			buildBinaryTree();
 		}
 		// divide the byteArray into nbSlave byte Array
-		List<byte[]> divideFile = getMultipleByteArray(fileContent);
+		List<byte[]> divideFile = getMultipleByteArray2(fileContent);
 		List<byte[]> forLeftSlave = new ArrayList<byte[]>(divideFile.subList(0, divideFile.size()/2));
 		List<byte[]> forRightSlave = new ArrayList<byte[]>(divideFile.subList(divideFile.size()/2, divideFile.size())) ;
 		leftSlave.subSave(filename, forLeftSlave);
@@ -112,7 +112,6 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		}
 		List<byte[]> bLeft = this.leftSlave.subRetrieve(filename);
 		List<byte[]> bRight = this.rightSlave.subRetrieve(filename);
-		bLeft.addAll(bRight);
 		return getRecomposeByteArray(bLeft, bRight);
 	}
 
@@ -155,21 +154,53 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		}
 	}
 	
-	private byte[] getRecomposeByteArray(List<byte[]>...l) {
-		byte[] res = new byte[l[0].get(0).length*this.nbSlave];
-		int cursor=0;
-		for (int k = 0; k < l.length; k++) {
-			for (int i = 0; i < l[k].size(); i++) {
-				for (int j = 0; j < l[k].get(i).length; j++) {
-					res[cursor] = l[k].get(i)[j];
-					cursor++;
-				}	
+	private byte[] getRecomposeByteArray(List<byte[]> leftList, List<byte[]> rightList) {
+		byte[] res = new byte[0];
+		for (int i = 0; i < leftList.size(); i++) {
+			res = concat(res, leftList.get(i));
+		}
+		for (int i = 0; i < rightList.size(); i++) {
+			res = concat(res, rightList.get(i));
+		}
+		System.out.println("res size : "+ res.length);
+		return res;
+	}
+	
+	private byte[] concat(byte[] b1, byte[] b2) {
+		int b1Len = b1.length;
+		int b2Len = b2.length;
+		byte[] res = new byte[b1Len + b2Len];
+		System.arraycopy(b1, 0, res, 0, b1Len);
+		System.arraycopy(b2, 0, res, b1Len, b2Len);
+		return res;
+	}
+		
+	private List<byte[]> getMultipleByteArray2(byte[] fileContent) {
+		System.out.println("Filecontent length : " + fileContent.length);
+		List<byte[]> res = new ArrayList<byte[]>();
+		int byteArrayLength = fileContent.length / this.nbSlave;
+		int notInRangeByte = fileContent.length % this.nbSlave;
+		int cursor = 0;
+		for (int i = 0; i < this.nbSlave; i++) {
+			byte[] forSlave;
+			if(notInRangeByte == 0) {
+				forSlave = new byte[byteArrayLength];
+			} else {
+				forSlave = new byte[byteArrayLength+1];
+				notInRangeByte--;
 			}
+			for (int j = 0; j < forSlave.length; j++) {
+				forSlave[i] = fileContent[cursor];
+			}
+			res.add(forSlave);
+			cursor++;
+			
 		}
 		return res;
 	}
 
 	private List<byte[]> getMultipleByteArray(byte[] fileContent) {
+		System.out.println("Filecontent length : " + fileContent.length);
 		byte[] toDivide;
 		List<byte[]> res = new ArrayList<byte[]>();
 		if (fileContent.length % 2 == 1) {

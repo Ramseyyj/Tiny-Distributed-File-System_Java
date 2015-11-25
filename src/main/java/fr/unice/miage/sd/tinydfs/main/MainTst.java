@@ -17,15 +17,15 @@ public class MainTst {
 
 	public static void main(String[] args) {
 		MainTst t = new MainTst();
-		/*byte[] b = {'a','z','f','f','e',',','u'};
-		List<byte[]> res = t.getMultipleByteArray(b);
+		byte[] b = {'a','z','f','f','e',',','u'};
+		List<byte[]> res = t.getMultipleByteArray2(b);
 		for (int i = 0; i < res.size(); i++) {
 			for (int j = 0; j < res.get(i).length; j++) {
 				System.out.print(res.get(i)[j]);
 				System.out.print(" ");
 			}
 			System.out.println();
-		}*/
+		}
 		String path;
 		try {
 			path = "rmi://" + InetAddress.getLocalHost().getHostAddress() + "/masterhost";
@@ -36,6 +36,29 @@ public class MainTst {
 			e.printStackTrace();
 		}
 		File test = new File("C:\\Users\\remi\\Desktop\\test123.txt");
+	}
+	
+	private List<byte[]> getMultipleByteArray2(byte[] fileContent) {
+		List<byte[]> res = new ArrayList<byte[]>();
+		int byteArrayLength = fileContent.length / 4;
+		int notInRangeByte = fileContent.length % 4;
+		int cursor = 0;
+		for (int i = 0; i < 4; i++) {
+			byte[] forSlave;
+			if(notInRangeByte == 0) {
+				forSlave = new byte[byteArrayLength];
+			} else {
+				forSlave = new byte[byteArrayLength+1];
+				notInRangeByte--;
+			}
+			for (int j = 0; j < forSlave.length; j++) {
+				forSlave[j] = fileContent[cursor];
+			}
+			res.add(forSlave);
+			cursor++;
+			
+		}
+		return res;
 	}
 	
 	private List<byte[]> getMultipleByteArray(byte[] fileContent) {
