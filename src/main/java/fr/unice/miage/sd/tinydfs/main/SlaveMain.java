@@ -4,7 +4,6 @@ import java.net.MalformedURLException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
-import java.rmi.RMISecurityManager;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -31,14 +30,14 @@ public class SlaveMain {
 				boolean result = checkRegisterSlave(url, slaveId);
 				if(!result)
 				{
-					Naming.rebind(url, objSlave);
+					Naming.bind(url, objSlave);
 					System.out.println("slave "+slaveId + " enregistré dans le RMI");
 				}
 				
 			}
 			catch (SlaveAlreadyRegisteredException e)
 			{
-				System.out.println("ERROR: " + e.getMessage());
+				System.err.println("ERROR: " + e.getMessage());
 			}catch (MalformedURLException e) {
 				System.err.println("Error :\n");
 				e.printStackTrace();

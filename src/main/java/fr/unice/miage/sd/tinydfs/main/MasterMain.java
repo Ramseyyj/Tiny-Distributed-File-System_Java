@@ -7,6 +7,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import fr.unice.miage.sd.tinydfs.exceptions.DfsRootFolderNotFoundException;
 import fr.unice.miage.sd.tinydfs.exceptions.WrongNbSlaveException;
 import fr.unice.miage.sd.tinydfs.nodes.Master;
 import fr.unice.miage.sd.tinydfs.nodes.MasterImpl;
@@ -26,7 +27,6 @@ public class MasterMain {
 			
 			// Create master and register it
 			Registry registry = LocateRegistry.createRegistry(1099);
-			
 			Master objMaster;
 			try {
 				 objMaster = new MasterImpl(dfsRootFolder,nbSlaves);
@@ -34,12 +34,11 @@ public class MasterMain {
 				 System.out.println("Master prêt et disponible à l'adresse: rmi://"+InetAddress.getLocalHost().getHostAddress()+
 						 ":1099/"+storageServiceName);
 			} catch (WrongNbSlaveException e) {
-				// TODO Auto-generated catch block
-				//e.printStackTrace();
-				System.out.println("Erreur: " + e.getMessage());
+				System.err.println("Erreur: " + e.getMessage());
 			}catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				System.out.println("Erreur: " + e.getMessage());
+				System.err.println("Erreur: " + e.getMessage());
+			} catch (DfsRootFolderNotFoundException e) {
+				System.err.println("Erreur : " + e.getMessage());
 			}
 		}else{
 			System.out.println("ERROR NOMBRE DE PARAMETRE INCORRECT");

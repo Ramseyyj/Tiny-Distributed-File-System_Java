@@ -16,6 +16,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.unice.miage.sd.tinydfs.exceptions.DfsRootFolderNotFoundException;
 import fr.unice.miage.sd.tinydfs.exceptions.WrongNbSlaveException;
 
 public class MasterImpl extends UnicastRemoteObject implements Master {
@@ -26,12 +27,16 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 	private Slave rightSlave;
 	private Slave leftSlave;
 
-	public MasterImpl(String dfsRootFolder, int nbSlave) throws RemoteException, WrongNbSlaveException {
+	public MasterImpl(String dfsRootFolder, int nbSlave) throws RemoteException, WrongNbSlaveException, DfsRootFolderNotFoundException {
 		super();
 		if ((nbSlave + 2 & nbSlave + 1) != 0) {
 			throw new WrongNbSlaveException(nbSlave);
 		}
+		File dfsRootFolderDirectory;
 		this.dfsRootFolder = dfsRootFolder;
+		dfsRootFolderDirectory = new File(this.dfsRootFolder);
+		if(dfsRootFolderDirectory != null && !dfsRootFolderDirectory.isDirectory()) 
+			throw new DfsRootFolderNotFoundException(dfsRootFolder);
 		this.slave = new Slave[nbSlave];
 		this.rightSlave = null;
 		this.leftSlave = null;
@@ -84,7 +89,10 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		if (rightSlave == null) {
 			buildBinaryTree();
 		}
-		return null;
+		List<byte[]> bLeft = this.leftSlave.subRetrieve(filename);
+		List<byte[]> bRight = this.rightSlave.subRetrieve(filename);
+		bLeft.addAll(bRight);
+		return getRecomposeByteArray(bLeft, bRight);
 	}
 
 	private void buildBinaryTree() {
@@ -121,6 +129,20 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	private byte[] getRecomposeByteArray(List<byte[]>...l) {
+		byte[] res = new byte[l[0].get(0).length*this.nbSlave];
+		int cursor=0;
+		for (int k = 0; k < l.length; k++) {
+			for (int i = 0; i < l[k].size(); i++) {
+				for (int j = 0; j < l[k].get(i).length; j++) {
+					res[cursor] = l[k].get(i)[j];
+					cursor++;
+				}	
+			}
+		}
+		return res;
 	}
 
 	private List<byte[]> getMultipleByteArray(byte[] fileContent) {
