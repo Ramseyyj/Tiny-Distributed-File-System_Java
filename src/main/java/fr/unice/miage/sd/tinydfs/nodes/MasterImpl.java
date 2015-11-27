@@ -13,6 +13,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import fr.unice.miage.sd.tinydfs.exceptions.WrongNbSlaveException;
@@ -24,6 +25,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 	private Slave[] slave;
 	private Slave rightSlave;
 	private Slave leftSlave;
+	private HashMap<String, List<Thread>> rastaThreadLocks;
 
 	public MasterImpl(String dfsRootFolder, int nbSlave) throws RemoteException, WrongNbSlaveException {
 		super();
@@ -32,23 +34,22 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		}
 		this.dfsRootFolder = dfsRootFolder;
 		File dfsFileRootFolder = new File(dfsRootFolder);
-		if(!dfsFileRootFolder.exists()){
+		if (!dfsFileRootFolder.exists()) {
 			dfsFileRootFolder.mkdir();
 			System.out.println("Création dossier " + dfsFileRootFolder.getName());
-		}
-		else
-		{
+		} else {
 			File[] oldFilesSlave = dfsFileRootFolder.listFiles();
-			for (File oldFile:oldFilesSlave) {
-				System.out.println("Suppression du fichier "  + oldFile.getName());
+			for (File oldFile : oldFilesSlave) {
+				System.out.println("Suppression du fichier " + oldFile.getName());
 				oldFile.delete();
 			}
 
 		}
-		this.nbSlave=nbSlave;
+		this.nbSlave = nbSlave;
 		this.slave = new Slave[nbSlave];
 		this.rightSlave = null;
 		this.leftSlave = null;
+		rastaThreadLocks = new HashMap<>();
 
 	}
 
@@ -64,7 +65,6 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 
 	@Override
 	public void saveFile(File file) throws RemoteException {
-		// Lecture du fichier
 		try {
 			saveBytes(file.getName(), Files.readAllBytes(file.toPath()));
 		} catch (IOException e) {
@@ -74,15 +74,23 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 
 	@Override
 	public void saveBytes(String filename, byte[] fileContent) throws RemoteException {
+		
 		if (rightSlave == null) {
 			buildBinaryTree();
 		}
+		rastaThreadLocks.put(filename, new ArrayList<Thread>());
 		// divide the byteArray into nbSlave byte Array
 		List<byte[]> divideFile = getMultipleByteArray2(fileContent);
-		List<byte[]> forLeftSlave = new ArrayList<byte[]>(divideFile.subList(0, divideFile.size()/2));
-		List<byte[]> forRightSlave = new ArrayList<byte[]>(divideFile.subList(divideFile.size()/2, divideFile.size())) ;
+		List<byte[]> forLeftSlave = new ArrayList<byte[]>(divideFile.subList(0, divideFile.size() / 2));
+		List<byte[]> forRightSlave = new ArrayList<byte[]>(
+				divideFile.subList(divideFile.size() / 2, divideFile.size()));
 		leftSlave.subSave(filename, forLeftSlave);
 		rightSlave.subSave(filename, forRightSlave);
+		for(Thread t : rastaThreadLocks.get(filename)){
+			t.notify();
+		}
+		rastaThreadLocks.get(filename).removeAll(rastaThreadLocks.get(filename));
+		rastaThreadLocks.remove(filename);
 	}
 
 	@Override
@@ -90,7 +98,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		byte[] b = retrieveBytes(filename);
 		File res = new File(dfsRootFolder + File.separator + filename);
 		try {
-			if(!res.exists()) {
+			if (!res.exists()) {
 				res.createNewFile();
 			} else {
 				res.delete();
@@ -110,9 +118,9 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		if (rightSlave == null) {
 			buildBinaryTree();
 		}
-		List<byte[]> bLeft = this.leftSlave.subRetrieve(filename);
-		List<byte[]> bRight = this.rightSlave.subRetrieve(filename);
-		return getRecomposeByteArray(bLeft, bRight);
+		RetrieveBytes retrieveBytesInst = new RetrieveBytes(filename);
+		retrieveBytesInst.start();
+		return retrieveBytesInst.getComposedArray();
 	}
 
 	private void buildBinaryTree() {
@@ -134,26 +142,28 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 
 		// Contruction de l'arbre binaire
 		int i = 1;
-		while (((i+1)*2)-2< slave.length) {
+		while (((i + 1) * 2) - 2 < slave.length) {
 			try {
-				slave[i - 1].setLeftSlave(slave[((i+1)*2)-2]);
-				slave[i - 1].setRightSlave(slave[((i+1)*2)-1]);
+				slave[i - 1].setLeftSlave(slave[((i + 1) * 2) - 2]);
+				slave[i - 1].setRightSlave(slave[((i + 1) * 2) - 1]);
 				i++;
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
 		}
-		
-		//A supprimer, test de construction de l'arbre
+
+		// A supprimer, test de construction de l'arbre
 		for (int j = 0; j < (slave.length / 2) - 1; j++) {
 			try {
-				System.out.println("Slave" + slave[j].getId() + " has for left leftSlave slave"+ slave[j].getLeftSlave().getId() + " and has for rightSlave slave" + slave[j].getRightSlave().getId());
+				System.out.println(
+						"Slave" + slave[j].getId() + " has for left leftSlave slave" + slave[j].getLeftSlave().getId()
+								+ " and has for rightSlave slave" + slave[j].getRightSlave().getId());
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
 		}
 	}
-	
+
 	private byte[] getRecomposeByteArray(List<byte[]> leftList, List<byte[]> rightList) {
 		byte[] res = new byte[0];
 		for (int i = 0; i < leftList.size(); i++) {
@@ -162,10 +172,10 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		for (int i = 0; i < rightList.size(); i++) {
 			res = concat(res, rightList.get(i));
 		}
-		System.out.println("res size : "+ res.length);
+		System.out.println("res size : " + res.length);
 		return res;
 	}
-	
+
 	private byte[] concat(byte[] b1, byte[] b2) {
 		int b1Len = b1.length;
 		int b2Len = b2.length;
@@ -174,7 +184,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		System.arraycopy(b2, 0, res, b1Len, b2Len);
 		return res;
 	}
-		
+
 	private List<byte[]> getMultipleByteArray2(byte[] fileContent) {
 		System.out.println("Filecontent length : " + fileContent.length);
 		List<byte[]> res = new ArrayList<byte[]>();
@@ -183,17 +193,17 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		int cursor = 0;
 		for (int i = 0; i < this.nbSlave; i++) {
 			byte[] forSlave;
-			if(notInRangeByte == 0) {
+			if (notInRangeByte == 0) {
 				forSlave = new byte[byteArrayLength];
 			} else {
-				forSlave = new byte[byteArrayLength+1];
+				forSlave = new byte[byteArrayLength + 1];
 				notInRangeByte--;
 			}
 			for (int j = 0; j < forSlave.length; j++) {
 				forSlave[j] = fileContent[cursor];
 				cursor++;
 			}
-			res.add(forSlave);			
+			res.add(forSlave);
 		}
 		return res;
 	}
@@ -212,7 +222,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		}
 		int curseur = 0;
 		for (int i = 0; i < this.nbSlave; i++) {
-			byte[] forSlave = new byte[toDivide.length/nbSlave];
+			byte[] forSlave = new byte[toDivide.length / nbSlave];
 			for (int j = 0; j < forSlave.length; j++) {
 				forSlave[i] = toDivide[curseur];
 				curseur++;
@@ -220,5 +230,46 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 			res.add(forSlave);
 		}
 		return res;
+	}
+
+	private class RetrieveBytes extends Thread {
+		private byte[] composedArray;
+		String filename;
+
+		public RetrieveBytes(String filename) {
+			this.filename = filename;
+		}
+
+		public byte[] getComposedArray() {
+			try {
+				wait (2000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return composedArray;
+		}
+
+		@Override
+		public void run() {
+			if (rastaThreadLocks.keySet().contains(filename)) {
+				rastaThreadLocks.get(filename).add(this);
+				try {
+					this.wait();
+				} catch (InterruptedException e) {
+					System.err.println("Erreur d'atente du thread pour le fichier " + filename);
+					e.printStackTrace();
+				}
+			}
+			try {
+				List<byte[]> bLeft = leftSlave.subRetrieve(filename);
+				List<byte[]> bRight = rightSlave.subRetrieve(filename);
+				composedArray = getRecomposeByteArray(bLeft, bRight);
+			} catch (Exception e) {
+				System.err.println("Impossible de récupérer l'arbre pour le fichier" + filename);
+			}
+
+		}
+
 	}
 }

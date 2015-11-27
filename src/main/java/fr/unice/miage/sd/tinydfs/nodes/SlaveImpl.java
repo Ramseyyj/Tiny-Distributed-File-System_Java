@@ -1,6 +1,7 @@
 package fr.unice.miage.sd.tinydfs.nodes;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -67,24 +68,14 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	public void subSave(String filename, List<byte[]> subFileContent) throws RemoteException {
 		int sizeList, middleList;
 		middleList = (sizeList = subFileContent.size()) / 2;
-		try {
-			subSaveDisk(idSlave + filename, subFileContent.get(middleList));
-		} catch (IOException e) {
-			System.err.println("Erreur d'écriture du fichier " + idSlave + filename);
-			e.printStackTrace();
-		}
+
+		new SubSaveDisk(idSlave + filename, subFileContent.get(middleList)).start();
 		if (middleList != 0) {
 			List<byte[]> left = new ArrayList<byte[]>(subFileContent.subList(0, middleList));
 			List<byte[]> right = new ArrayList<byte[]>(subFileContent.subList(middleList + 1, sizeList));
 			leftSlave.subSave(filename, left);
 			rightSlave.subSave(filename, right);
 		}
-	}
-
-	private void subSaveDisk(String filename, byte[] fileContent) throws IOException {
-		FileOutputStream stream = new FileOutputStream(dfsRootFolder + File.separator + filename);
-		stream.write(fileContent);
-		stream.close();
 	}
 
 	private byte[] subRetireveDisk(String filename) {
@@ -102,11 +93,12 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	@Override
 	public List<byte[]> subRetrieve(String filename) throws RemoteException {
 
+		byte[] localPart = subRetireveDisk(idSlave + filename);
 		if (leftSlave == null) {
-			return new ArrayList<>(Arrays.asList(subRetireveDisk(idSlave + filename)));
+			return new ArrayList<>(Arrays.asList(localPart));
 		}
 		List<byte[]> responsableList = leftSlave.subRetrieve(filename);
-		responsableList.add(subRetireveDisk(idSlave + filename));
+		responsableList.add(localPart);
 		responsableList.addAll(rightSlave.subRetrieve(filename));
 		return responsableList;
 	}
@@ -118,5 +110,30 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 			return Pattern.compile("^" + idSlave).matcher(name).matches();
 		}
 
+	}
+
+	private class SubSaveDisk extends Thread {
+		private String filename;
+		private byte[] filecontent;
+
+		public SubSaveDisk(String filename, byte[] filecontent) {
+			this.filename = filename;
+			this.filecontent = filecontent;
+		}
+
+		@Override
+		public void run() {
+			FileOutputStream stream = null;
+			try {
+				stream = new FileOutputStream(dfsRootFolder + File.separator + filename);
+				stream.write(filecontent);
+				stream.close();
+			} catch (IOException e1) {
+
+				System.err.println("Erreur de flux le fichier " + filename);
+				e1.printStackTrace();
+			}
+
+		}
 	}
 }
