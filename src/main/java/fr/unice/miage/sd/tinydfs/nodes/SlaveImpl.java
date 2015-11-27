@@ -18,22 +18,20 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 	private int idSlave;
 	private String dfsRootFolder;
-	private Slave leftSlave,rightSlave;
+	private Slave leftSlave, rightSlave;
 
 	public SlaveImpl(int id, String dfsRootFolder) throws RemoteException {
 		super();
 		this.idSlave = id;
 		this.dfsRootFolder = dfsRootFolder;
 		File dfsFileRootFolder = new File(dfsRootFolder);
-		if(!dfsFileRootFolder.exists()){
+		if (!dfsFileRootFolder.exists()) {
 			dfsFileRootFolder.mkdir();
 			System.out.println("Création dossier " + dfsFileRootFolder.getName());
-		}
-		else
-		{
+		} else {
 			File[] oldFilesSlave = dfsFileRootFolder.listFiles(new filterSlave());
-			for (File oldFile:oldFilesSlave) {
-				System.out.println("Suppression du fichier "  + oldFile.getName());
+			for (File oldFile : oldFilesSlave) {
+				System.out.println("Suppression du fichier " + oldFile.getName());
 				oldFile.delete();
 			}
 
@@ -67,12 +65,12 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 	@Override
 	public void subSave(String filename, List<byte[]> subFileContent) throws RemoteException {
-		int sizeList,middleList;
-		middleList=(sizeList=subFileContent.size())/2;
+		int sizeList, middleList;
+		middleList = (sizeList = subFileContent.size()) / 2;
 		try {
-			subSaveDisk(idSlave+filename, subFileContent.get(middleList));
+			subSaveDisk(idSlave + filename, subFileContent.get(middleList));
 		} catch (IOException e) {
-			System.err.println("Erreur d'écriture du fichier " + idSlave+filename);
+			System.err.println("Erreur d'écriture du fichier " + idSlave + filename);
 			e.printStackTrace();
 		}
 		if (middleList != 0) {
@@ -95,7 +93,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		try {
 			data = Files.readAllBytes(path);
 		} catch (IOException e) {
-			System.err.println("Erreur de lecture du fichier "+dfsRootFolder + File.separator + filename);
+			System.err.println("Erreur de lecture du fichier " + dfsRootFolder + File.separator + filename);
 			e.printStackTrace();
 		}
 		return data;
@@ -103,24 +101,21 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 	@Override
 	public List<byte[]> subRetrieve(String filename) throws RemoteException {
-		List<byte[]> res = new ArrayList<byte[]>();
-		if(leftSlave==null)
-		{
-			res.add(subRetireveDisk(idSlave+filename));
-			return res;
-			//return Arrays.asList(subRetireveDisk(idSlave+filename));
+
+		if (leftSlave == null) {
+			return new ArrayList<>(Arrays.asList(subRetireveDisk(idSlave + filename)));
 		}
 		List<byte[]> responsableList = leftSlave.subRetrieve(filename);
-		responsableList.add(subRetireveDisk(idSlave+filename));
+		responsableList.add(subRetireveDisk(idSlave + filename));
 		responsableList.addAll(rightSlave.subRetrieve(filename));
 		return responsableList;
 	}
-	
+
 	class filterSlave implements FilenameFilter {
 
 		@Override
 		public boolean accept(File folder, String name) {
-			return Pattern.compile("^"+idSlave).matcher(name).matches();
+			return Pattern.compile("^" + idSlave).matcher(name).matches();
 		}
 
 	}
