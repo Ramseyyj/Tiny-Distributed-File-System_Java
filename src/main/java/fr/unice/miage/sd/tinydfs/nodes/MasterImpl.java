@@ -24,6 +24,8 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 	private Slave[] slave;
 	private Slave rightSlave;
 	private Slave leftSlave;
+	private boolean isBuilded;
+	private List<String> fileLocked;
 
 	public MasterImpl(String dfsRootFolder, int nbSlave) throws RemoteException, WrongNbSlaveException {
 		super();
@@ -45,10 +47,12 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 			}
 
 		}
+		this.isBuilded = false;
 		this.nbSlave=nbSlave;
 		this.slave = new Slave[nbSlave];
 		this.rightSlave = null;
 		this.leftSlave = null;
+		this.fileLocked = new ArrayList<String>();
 
 	}
 
@@ -73,16 +77,28 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 	}
 
 	@Override
-	public void saveBytes(String filename, byte[] fileContent) throws RemoteException {
-		if (rightSlave == null) {
+	public void saveBytes(final String filename, final byte[] fileContent) throws RemoteException {
+		if (!isBuilded) {
 			buildBinaryTree();
+			isBuilded = true;
 		}
-		// divide the byteArray into nbSlave byte Array
-		List<byte[]> divideFile = getMultipleByteArray2(fileContent);
-		List<byte[]> forLeftSlave = new ArrayList<byte[]>(divideFile.subList(0, divideFile.size()/2));
-		List<byte[]> forRightSlave = new ArrayList<byte[]>(divideFile.subList(divideFile.size()/2, divideFile.size())) ;
-		leftSlave.subSave(filename, forLeftSlave);
-		rightSlave.subSave(filename, forRightSlave);
+		fileLocked.add(filename);
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				System.out.println("Thread running");
+				List<byte[]> divideFile = getMultipleByteArray2(fileContent);
+				List<byte[]> forLeftSlave = new ArrayList<byte[]>(divideFile.subList(0, divideFile.size()/2));
+				List<byte[]> forRightSlave = new ArrayList<byte[]>(divideFile.subList(divideFile.size()/2, divideFile.size())) ;
+				try {
+					leftSlave.subSave(filename, forLeftSlave);
+					rightSlave.subSave(filename, forRightSlave);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+				fileLocked.remove(fileLocked.indexOf(filename));
+			}
+		}).start();
 	}
 
 	@Override
@@ -107,8 +123,16 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 
 	@Override
 	public byte[] retrieveBytes(String filename) throws RemoteException {
-		if (rightSlave == null) {
+		if (!isBuilded) {
 			buildBinaryTree();
+			isBuilded = true;
+		}
+		while(fileLocked.contains(filename)) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 		List<byte[]> bLeft = this.leftSlave.subRetrieve(filename);
 		List<byte[]> bRight = this.rightSlave.subRetrieve(filename);
