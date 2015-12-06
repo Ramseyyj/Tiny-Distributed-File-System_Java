@@ -92,7 +92,7 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
 	@Override
 	public List<byte[]> subRetrieve(String filename) throws RemoteException {
-		if(!new File(dfsRootFolder + File.separator + filename).exists()){
+		if(!(new File(dfsRootFolder + File.separator + filename)).exists()){
 			return null;
 		}
 		byte[] localPart = subRetireveDisk(idSlave + filename);
