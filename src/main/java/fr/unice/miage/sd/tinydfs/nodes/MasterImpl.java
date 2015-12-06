@@ -104,6 +104,9 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 	@Override
 	public File retrieveFile(String filename) throws RemoteException {
 		byte[] b = retrieveBytes(filename);
+		if(b == null) {
+			return null;
+		}
 		File res = new File(dfsRootFolder + File.separator + filename);
 		try {
 			if(!res.exists()) {
@@ -135,6 +138,9 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 			}
 		}
 		List<byte[]> bLeft = this.leftSlave.subRetrieve(filename);
+		if(bLeft == null) {
+			return null;
+		}
 		List<byte[]> bRight = this.rightSlave.subRetrieve(filename);
 		return getRecomposeByteArray(bLeft, bRight);
 	}
