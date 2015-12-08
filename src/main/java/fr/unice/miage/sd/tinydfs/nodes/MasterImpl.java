@@ -26,8 +26,8 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 	private Slave rightSlave;
 	private Slave leftSlave;
 	private boolean isBuilded;
-	private HashMap<String, List<Thread>> fileLocked;
-
+	private HashMap<String, List<Thread>> fileLocked; // Un hashmap contiens la liste des Saves en cours
+//Avoir une liste permet d'avoir plusieur Saves sur le même filename en meme temps .
 	public MasterImpl(String dfsRootFolder, int nbSlave) throws RemoteException, WrongNbSlaveException {
 		super();
 		if ((nbSlave + 2 & nbSlave + 1) != 0) {
@@ -53,7 +53,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		this.slave = new Slave[nbSlave];
 		this.rightSlave = null;
 		this.leftSlave = null;
-		this.fileLocked = new HashMap<>();
+		this.fileLocked = new HashMap<>();// Instanciation du Hashmap
 	}
 
 	@Override
@@ -95,14 +95,16 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
-				fileLocked.get(filename).remove(this);
+				fileLocked.get(filename).remove(this); // Une fois le thread terminé, il se retire lui même de la liste
 			}
-		});
+		}); 
+		//Sauvegarde des threads dans la liste correspondant à la Clé 
 		if(!fileLocked.containsKey(filename)){
 			fileLocked.put(filename, new ArrayList<Thread>());
 		}
-		fileLocked.get(filename).add(threadRetrieve);
+		fileLocked.get(filename).add(threadRetrieve); 
 		threadRetrieve.start();
+		///////////////////////////////
 	}
 
 	@Override
@@ -131,10 +133,9 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 			buildBinaryTree();
 			isBuilded = true;
 		}
-		for (Thread retrieve : fileLocked.get(filename)) {
+		for (Thread retrieve : fileLocked.get(filename)) { // Si un thread ou plusieurs threads "Save" est actuellement en train de s'exécuter 
 				try {
-					
-					retrieve.join();
+					retrieve.join(); // On attends la fin de ce thread "Save" (avant de continuer l'exécution du retireve) 
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
