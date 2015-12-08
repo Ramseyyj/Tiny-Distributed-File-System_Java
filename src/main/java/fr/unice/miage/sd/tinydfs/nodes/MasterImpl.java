@@ -86,7 +86,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 			@Override
 			public void run() {
 				System.out.println("Thread running");
-				List<byte[]> divideFile = getMultipleByteArray2(fileContent);
+				List<byte[]> divideFile = getMultipleByteArray(fileContent);
 				List<byte[]> forLeftSlave = new ArrayList<byte[]>(divideFile.subList(0, divideFile.size() / 2));
 				List<byte[]> forRightSlave = new ArrayList<byte[]>(
 						divideFile.subList(divideFile.size() / 2, divideFile.size()));
@@ -228,7 +228,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		return res;
 	}
 
-	private List<byte[]> getMultipleByteArray2(byte[] fileContent) {
+	private List<byte[]> getMultipleByteArray(byte[] fileContent) {
 		System.out.println("Filecontent length : " + fileContent.length);
 		List<byte[]> res = new ArrayList<byte[]>();
 		int byteArrayLength = fileContent.length / this.nbSlave;
@@ -245,30 +245,6 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 			for (int j = 0; j < forSlave.length; j++) {
 				forSlave[j] = fileContent[cursor];
 				cursor++;
-			}
-			res.add(forSlave);
-		}
-		return res;
-	}
-
-	private List<byte[]> getMultipleByteArray(byte[] fileContent) {
-		System.out.println("Filecontent length : " + fileContent.length);
-		byte[] toDivide;
-		List<byte[]> res = new ArrayList<byte[]>();
-		if (fileContent.length % 2 == 1) {
-			toDivide = new byte[fileContent.length + 1];
-			for (int i = 0; i < fileContent.length; i++) {
-				toDivide[i] = fileContent[i];
-			}
-		} else {
-			toDivide = fileContent;
-		}
-		int curseur = 0;
-		for (int i = 0; i < this.nbSlave; i++) {
-			byte[] forSlave = new byte[toDivide.length / nbSlave];
-			for (int j = 0; j < forSlave.length; j++) {
-				forSlave[i] = toDivide[curseur];
-				curseur++;
 			}
 			res.add(forSlave);
 		}
