@@ -96,7 +96,11 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
-				fileLocked.remove(fileLocked.indexOf(filename));
+				String toBeSynchronized = fileLocked.get(fileLocked.indexOf(filename));
+				synchronized(toBeSynchronized) {
+					fileLocked.remove(fileLocked.indexOf(filename));
+					toBeSynchronized.notifyAll();
+				}
 			}
 		}).start();
 	}
@@ -130,13 +134,25 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 			buildBinaryTree();
 			isBuilded = true;
 		}
-		while(fileLocked.contains(filename)) {
+		if(fileLocked.contains(filename)) {
+			String toBeSynchronized = fileLocked.get(fileLocked.indexOf(filename));
+			synchronized(toBeSynchronized) {
+				while(fileLocked.contains(filename)) {
+					try {
+						toBeSynchronized.wait();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+		/*while(fileLocked.contains(filename)) {
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-		}
+		}*/
 		List<byte[]> bLeft = this.leftSlave.subRetrieve(filename);
 		if(bLeft == null) {
 			return null;
