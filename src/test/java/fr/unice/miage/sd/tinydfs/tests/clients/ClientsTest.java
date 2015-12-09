@@ -151,7 +151,7 @@ public class ClientsTest {
 			File dfsRootFolder = new File(dfsRootFolderPath);
 			File[] folderFiles = dfsRootFolder.listFiles();
 			int expectedNbFiles = master.getNbSlaves() * 2 + 2;
-			Assert.assertTrue(folderFiles.length == expectedNbFiles);;
+			Assert.assertTrue(folderFiles.length == expectedNbFiles);
 			for (File file: folderFiles) {
 				Assert.assertTrue(file.lastModified() > testStartTime);
 			}

@@ -18,6 +18,18 @@ import java.util.List;
 
 import fr.unice.miage.sd.tinydfs.exceptions.WrongNbSlaveException;
 
+/**
+ * @author remi
+ *
+ */
+/**
+ * @author remi
+ *
+ */
+/**
+ * @author remi
+ *
+ */
 public class MasterImpl extends UnicastRemoteObject implements Master {
 
 	private String dfsRootFolder;
@@ -30,16 +42,27 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 	// Un hashmap contiens la liste des Saves en cours
 	// Avoir une liste permet d'avoir plusieur Saves sur le même filename en meme temps .
 
+	/**
+	 * Constructor
+	 * @param dfsRootFolder
+	 * @param nbSlave
+	 * @throws RemoteException
+	 * @throws WrongNbSlaveException
+	 */
 	public MasterImpl(String dfsRootFolder, int nbSlave) throws RemoteException, WrongNbSlaveException {
+		//constructeur RMI
 		super();
+		// Verfication que le nombre de Salve est correcte
 		if ((nbSlave + 2 & nbSlave + 1) != 0) {
 			throw new WrongNbSlaveException(nbSlave);
 		}
+		//Initialisation et création du dfsRootFOlder si celui ci n'existe pas
 		this.dfsRootFolder = dfsRootFolder;
 		File dfsFileRootFolder = new File(dfsRootFolder);
 		if (!dfsFileRootFolder.exists()) {
 			dfsFileRootFolder.mkdir();
 			System.out.println("Création dossier " + dfsFileRootFolder.getName());
+		//Si le fichier existait déjà, on supprime son contenu
 		} else {
 			File[] oldFilesSlave = dfsFileRootFolder.listFiles();
 			for (File oldFile : oldFilesSlave) {
@@ -48,6 +71,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 			}
 
 		}
+		//Initialisation des champs
 		this.isBuilded = false;
 		this.nbSlave = nbSlave;
 		this.slave = new Slave[nbSlave];
@@ -56,16 +80,25 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		this.fileLocked = new HashMap<>();// Instanciation du Hashmap
 	}
 
+	/**
+	 * Getter dfsRootFolder
+	 */
 	@Override
 	public String getDfsRootFolder() throws RemoteException {
 		return this.dfsRootFolder;
 	}
 
+	/**
+	 * Getter nbSlave
+	 */
 	@Override
 	public int getNbSlaves() throws RemoteException {
 		return this.nbSlave;
 	}
-
+	
+	/**
+	 * saveFile, call saveBytes
+	 */
 	@Override
 	public void saveFile(File file) throws RemoteException {
 		// Lecture du fichier
@@ -77,45 +110,61 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 	}
 
 	@Override
+	/**
+	 * Sauvegarde d'un tableau de bytes dans les slaves
+	 */
 	public void saveBytes(final String filename, final byte[] fileContent) throws RemoteException {
+		//Si premier appel client, alors on construit l'arbre
 		if (!isBuilded) {
 			buildBinaryTree();
 			isBuilded = true;
 		}
+		//Création d'un thread pour la sauvegarde soit non bloquante
 		Thread threadRetrieve = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				System.out.println("Thread running");
-				List<byte[]> divideFile = getMultipleByteArray2(fileContent);
+				//On découpe notre tableau en nbSlave tableau de taille égal
+				List<byte[]> divideFile = getMultipleByteArray(fileContent);
+				//On découpe la liste en deux pour chacun des slaves fils du master
 				List<byte[]> forLeftSlave = new ArrayList<byte[]>(divideFile.subList(0, divideFile.size() / 2));
 				List<byte[]> forRightSlave = new ArrayList<byte[]>(
 						divideFile.subList(divideFile.size() / 2, divideFile.size()));
 				try {
+					//Sauvegarde des données dans les slaves du master
 					leftSlave.subSave(filename, forLeftSlave);
 					rightSlave.subSave(filename, forRightSlave);
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
-				fileLocked.get(filename).remove(this); // Une fois le thread
-														// terminé, il se retire
-														// lui même de la liste
+				/*Une fois le thread
+				* terminé, il se retire
+				* lui même de la liste, afin de retirer le lock
+				*/
+				fileLocked.get(filename).remove(this);
 			}
 		});
-		// Sauvegarde des threads dans la liste correspondant à la Clé
+		// Sauvegarde des threads dans la liste correspondant à la Clé juste avant le décelnchement du Thread
 		if (!fileLocked.containsKey(filename)) {
 			fileLocked.put(filename, new ArrayList<Thread>());
 		}
 		fileLocked.get(filename).add(threadRetrieve);
+		//On démarre le thread
 		threadRetrieve.start();
-		///////////////////////////////
 	}
 
+	/**
+	 * retrieveFile : récupère les datas contenus dans les slaves et les renvoit sous forme d'un fichier
+	 */
 	@Override
 	public File retrieveFile(String filename) throws RemoteException {
+		//On récupère les morceaux de fichiers contenus dans les slaves
 		byte[] b = retrieveBytes(filename);
+		//Si on a rien récupéré, on retourne null
 		if(b==null) {
 			return null;
 		}
+		//On crée le fichier qu'on renverra à l'utilisateur
 		File res = new File(dfsRootFolder + File.separator + filename);
 		try {
 			if (!res.exists()) {
@@ -124,22 +173,29 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 				res.delete();
 				res.createNewFile();
 			}
+			//On écrit les données dans ce fichier
 			FileOutputStream fos = new FileOutputStream(res);
 			fos.write(b);
 			fos.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		//On renvoit le fichier
 		return res;
 	}
 
 	@Override
+	/**
+	 * retrieveBytes : recupère les morceaux de fichiers contenus dans les slaves
+	 * et les renvoit sous la forme d'un unique tableau de bytes
+	 */
 	public byte[] retrieveBytes(String filename) throws RemoteException {
+		//Si v'est un premier p=appel client, on construit l'arbre
 		if (!isBuilded) {
 			buildBinaryTree();
 			isBuilded = true;
 		}
-
+		//Si une sauvegarde est en cours sur le nom de fichier, on attend que la sauvegarde soit terminé
 		if (fileLocked.containsKey(filename)) {
 
 			for (Thread retrieve : fileLocked.get(filename)) { // Si un thread
@@ -158,20 +214,29 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 				}
 			}
 		}
+		//On récupere les bytes contenus dans les slaves
 		List<byte[]> bLeft = this.leftSlave.subRetrieve(filename);
+		//Si rien n'est récupéré, on renvoit null
 		if(bLeft == null) {
 			 return null;
 		}
 		List<byte[]> bRight = this.rightSlave.subRetrieve(filename);
+		//On retorune un tableau de byte construit sur les tableaux récupérés
 		return getRecomposeByteArray(bLeft, bRight);
 	}
 
+	/**
+	 * Fonction de construction de l'arbre
+	 */
 	private void buildBinaryTree() {
 		// Initialisation des références vers les slaves
 		for (int i = 0; i < this.nbSlave; i++) {
 			try {
+				//On récupère le nom du service proposé par un slave
 				String path = "rmi://" + InetAddress.getLocalHost().getHostAddress() + "/slave" + i;
+				//On y accède
 				Remote r = Naming.lookup(path);
+				//On l'enregistre dans notre tableau de slave
 				slave[i] = (Slave) r;
 			} catch (UnknownHostException | MalformedURLException | RemoteException | NotBoundException e) {
 				// TODO Auto-generated catch block
@@ -184,6 +249,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		this.rightSlave = slave[1];
 
 		// Contruction de l'arbre binaire
+		// Il s'agit uniquement d'un jeu d'indice sur le tableau des slaves
 		int i = 1;
 		while (((i + 1) * 2) - 2 < slave.length) {
 			try {
@@ -195,7 +261,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 			}
 		}
 
-		// A supprimer, test de construction de l'arbre
+		//Test de construction de l'arbre, pour vérifier que tout les slmaves ont les bons fils
 		for (int j = 0; j < (slave.length / 2) - 1; j++) {
 			try {
 				System.out.println(
@@ -207,18 +273,31 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		}
 	}
 
+	/**
+	 * getRecomposeByteArray
+	 * Assemble des list<byte[]> en un tableau de byte
+	 * @param leftList
+	 * @param rightList
+	 * @return byte[]
+	 */
 	private byte[] getRecomposeByteArray(List<byte[]> leftList, List<byte[]> rightList) {
 		byte[] res = new byte[0];
+		//Pour chaque élément de chaque liste, on concatène le tableau récupéré avec le précédent
 		for (int i = 0; i < leftList.size(); i++) {
 			res = concat(res, leftList.get(i));
 		}
 		for (int i = 0; i < rightList.size(); i++) {
 			res = concat(res, rightList.get(i));
 		}
-		System.out.println("res size : " + res.length);
 		return res;
 	}
-
+	/**
+	 * concat
+	 * Assemble deux tableaux de bytes en un seul
+	 * @param b1
+	 * @param b2
+	 * @return b1 concatener avec b2
+	 */
 	private byte[] concat(byte[] b1, byte[] b2) {
 		int b1Len = b1.length;
 		int b2Len = b2.length;
@@ -228,12 +307,22 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		return res;
 	}
 
-	private List<byte[]> getMultipleByteArray2(byte[] fileContent) {
+	/**
+	 * getMultipleByteArray
+	 * décompose un tableau de byte en nbSlave tableau de byte
+	 * Renvoit une liste contenant tout les tableaux obtenus
+	 * @param fileContent
+	 * @return List<byte[]>
+	 */
+	private List<byte[]> getMultipleByteArray(byte[] fileContent) {
 		System.out.println("Filecontent length : " + fileContent.length);
 		List<byte[]> res = new ArrayList<byte[]>();
+		//On calcule le nombre de tableau à créer
+		//On calcule le nombre de byte en trop
 		int byteArrayLength = fileContent.length / this.nbSlave;
 		int notInRangeByte = fileContent.length % this.nbSlave;
 		int cursor = 0;
+		//Création des tableaux. 
 		for (int i = 0; i < this.nbSlave; i++) {
 			byte[] forSlave;
 			if (notInRangeByte == 0) {
@@ -242,33 +331,10 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 				forSlave = new byte[byteArrayLength + 1];
 				notInRangeByte--;
 			}
+			//On remplit le tableau qui vient d'être crée avec les bytes voulus
 			for (int j = 0; j < forSlave.length; j++) {
 				forSlave[j] = fileContent[cursor];
 				cursor++;
-			}
-			res.add(forSlave);
-		}
-		return res;
-	}
-
-	private List<byte[]> getMultipleByteArray(byte[] fileContent) {
-		System.out.println("Filecontent length : " + fileContent.length);
-		byte[] toDivide;
-		List<byte[]> res = new ArrayList<byte[]>();
-		if (fileContent.length % 2 == 1) {
-			toDivide = new byte[fileContent.length + 1];
-			for (int i = 0; i < fileContent.length; i++) {
-				toDivide[i] = fileContent[i];
-			}
-		} else {
-			toDivide = fileContent;
-		}
-		int curseur = 0;
-		for (int i = 0; i < this.nbSlave; i++) {
-			byte[] forSlave = new byte[toDivide.length / nbSlave];
-			for (int j = 0; j < forSlave.length; j++) {
-				forSlave[i] = toDivide[curseur];
-				curseur++;
 			}
 			res.add(forSlave);
 		}

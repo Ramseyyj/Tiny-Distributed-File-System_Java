@@ -5,20 +5,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface Master extends Remote {
-	//Fields
-	/*
-	 * Répertoire tampon (voir sujet) : private File DfsRootFolder
-	 * Nombre de slave : private Integer nbSlaves (initialized to null)
-	 * Tableau de référence : Slave[] slave
-	 */
-	
-	//constructors
-	/*public Master(String dfsRootFolder, int nbSlave  )
-	 * initialized the field
-	 * 
-	 */
-	
-	//Methods
+
 	/**
 	 * Get the dfs root folder
 	 * @return String DfsRootFolder
