@@ -25,9 +25,10 @@ public class MasterMain {
 			// Create master and register it
 			Registry registry = LocateRegistry.createRegistry(1099);
 			Master objMaster;
-
 			try {
+				//Initialise le master
 				objMaster = new MasterImpl(dfsRootFolder, nbSlaves);
+				//Enregistre le master dans le RMI
 				registry.bind(storageServiceName, objMaster);
 				System.out.println("Master prêt et disponible à l'adresse: rmi://"
 						+ InetAddress.getLocalHost().getHostAddress() + ":1099/" + storageServiceName);
