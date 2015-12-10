@@ -80,6 +80,22 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 			rightSlave.subSave(filename, right);
 		}
 	}
+	
+	@Override
+	public long getFileSubsize(String filename) throws RemoteException {
+		File f = new File(dfsRootFolder + File.separator + idSlave + filename);
+		if(!f.exists() || f.isDirectory()) {
+			System.out.println("Slave" + idSlave + "ta mere");
+			return -1;
+		}
+		if(rightSlave == null) {
+			return f.length();
+		}
+		long rightSize = rightSlave.getFileSubsize(filename);
+		long leftSize = leftSlave.getFileSubsize(filename);
+		long res = leftSize + f.length() + rightSize;
+		return res;
+	}
 
 	private void subSaveDisk(String filename, byte[] fileContent) throws IOException {
 		FileOutputStream stream = new FileOutputStream(dfsRootFolder + File.separator + filename);

@@ -50,9 +50,17 @@ public interface Master extends Remote {
 	 * Retrieve a file in the dfs as a byte array
 	 * Ask to the first Slave the file
 	 * @param filename
-	 * @return
+	 * @return byte[] retrieveBytes();
 	 * @throws RemoteException
 	 */
 	public byte[] retrieveBytes(String filename) throws RemoteException;
+	
+	/**
+	 * Ask the size of a file
+	 * @param filename
+	 * @return size of the file
+	 * @throws RemoteException
+	 */
+	public long getFileSize(String filename) throws RemoteException;
 	
 }

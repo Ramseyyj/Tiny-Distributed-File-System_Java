@@ -224,6 +224,31 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		//On retorune un tableau de byte construit sur les tableaux récupérés
 		return getRecomposeByteArray(bLeft, bRight);
 	}
+	
+	@Override
+	public long getFileSize(String filename) throws RemoteException {
+		if(!isBuilded) {
+			buildBinaryTree();
+		}
+		//Même méthode d'attente que dans le retrieveBytes().
+		if (fileLocked.containsKey(filename)) {
+
+			for (Thread retrieve : fileLocked.get(filename)) { 
+				try {
+					retrieve.join(); 
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		long leftSize = leftSlave.getFileSubsize(filename);
+		if(leftSize == -1) {
+			System.err.println("Impossible de retrouver la taille, le fichier n'existe pas");
+			return -1;
+		}
+		long rightSize = rightSlave.getFileSubsize(filename);
+		return leftSize + rightSize;
+	}
 
 	/**
 	 * Fonction de construction de l'arbre

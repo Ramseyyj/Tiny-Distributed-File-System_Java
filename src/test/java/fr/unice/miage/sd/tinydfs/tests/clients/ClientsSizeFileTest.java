@@ -11,6 +11,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Properties;
+import java.util.concurrent.locks.AbstractQueuedLongSynchronizer.ConditionObject;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -99,22 +100,11 @@ public class ClientsSizeFileTest {
 					
 					master.saveFile(expectedFile);
 					
-					try {
-						Thread.sleep(10000);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					File retrievedFile = master.retrieveFile(Constants.TEXTUAL_SAMPLE_FILE_NAME);
-					retrievedFile.createNewFile();
 					
-			  System.out.println("TEST SIZE: \t \t AFTER SAVE: RETRIEVE");
-					
-			  System.out.println("TEST SIZE END: \t \t FILE NAME: " +retrievedFile.getName() +" SIZE : " +retrievedFile.length()/unite +" KO ");
-					
-					assertEquals(expectedFile.length(), retrievedFile.length());
-					//FileAssert.assertBinaryEquals(expectedFile, retrievedFile);
-			 //System.out.println("***END CLIENT TEST SIZE FILE**************");
+			  System.out.println("TEST SIZE: \t \t AFTER SAVE: RETRIEVESIZE");
+					assertEquals(expectedFile.length(), master.getFileSize(Constants.TEXTUAL_SAMPLE_FILE_NAME));
+					System.out.println("Test du cas ou le fichier n'existe pas");
+					assertEquals(-1, master.getFileSize("cecidoitetreunfichierinexistant"));
 				}else{
 					System.out.println("FILE TEST NO FOUND");
 				}

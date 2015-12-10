@@ -78,5 +78,7 @@ public interface Slave extends Remote {
 	 * @throws RemoteException
 	 */
 	public List<byte[]> subRetrieve(String filename) throws RemoteException;
+	
+	public long getFileSubsize(String filename) throws RemoteException;
 
 }
