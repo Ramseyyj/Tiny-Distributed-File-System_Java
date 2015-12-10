@@ -16,16 +16,14 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Properties;
 
-import javax.xml.stream.events.StartDocument;
-
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import junitx.framework.FileAssert;
 import fr.unice.miage.sd.tinydfs.nodes.Master;
 import fr.unice.miage.sd.tinydfs.tests.config.Constants;
+import junitx.framework.FileAssert;
 
 
 public class ClientsTest {

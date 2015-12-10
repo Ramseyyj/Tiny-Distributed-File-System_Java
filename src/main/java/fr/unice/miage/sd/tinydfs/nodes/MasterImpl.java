@@ -20,6 +20,7 @@ import fr.unice.miage.sd.tinydfs.exceptions.WrongNbSlaveException;
 
 public class MasterImpl extends UnicastRemoteObject implements Master {
 
+	private static final long serialVersionUID = 1L;
 	private String dfsRootFolder;
 	private int nbSlave;
 	private Slave[] slave;
@@ -50,7 +51,6 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		if (!dfsFileRootFolder.exists()) {
 			dfsFileRootFolder.mkdir();
 			System.out.println("Création dossier " + dfsFileRootFolder.getName());
-		//Si le fichier existait déjà, on supprime son contenu
 		}
 		//Initialisation des champs
 		this.isBuilded = false;
@@ -58,7 +58,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		this.slave = new Slave[nbSlave];
 		this.rightSlave = null;
 		this.leftSlave = null;
-		this.fileLocked = new HashMap<>();// Instanciation du Hashmap
+		this.fileLocked = new HashMap<>();
 	}
 
 	/**
@@ -183,8 +183,8 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 			buildBinaryTree();
 			isBuilded = true;
 		}
+		//On attend la fin des sauvegardes
 		checkTerminatedSave(filename);
-
 		//On récupere les bytes contenus dans les slaves
 		List<byte[]> bLeft = this.leftSlave.subRetrieve(filename);
 		//Si rien n'est récupéré, on renvoit null
@@ -213,6 +213,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 			System.err.println("Impossible de retrouver la taille, le fichier n'existe pas");
 			return -1;
 		}
+		//on calcul et renvoit la taille total
 		long rightSize = rightSlave.getFileSubsize(filename);
 		return leftSize + rightSize;
 	}

@@ -1,6 +1,6 @@
 package fr.unice.miage.sd.tinydfs.tests.clients;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,15 +11,12 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Properties;
-import java.util.concurrent.locks.AbstractQueuedLongSynchronizer.ConditionObject;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import fr.unice.miage.sd.tinydfs.nodes.Master;
 import fr.unice.miage.sd.tinydfs.tests.config.Constants;
-import junit.framework.Assert;
-import junitx.framework.FileAssert;
 
 public class ClientsSizeFileTest {
 

@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 
 public class SlaveImpl extends UnicastRemoteObject implements Slave {
 
+	private static final long serialVersionUID = 1L;
 	private int idSlave;
 	private String dfsRootFolder;
 	private Slave leftSlave, rightSlave;
