@@ -21,11 +21,11 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	private Slave leftSlave, rightSlave;
 
 	/**
-	 * Constructeur Créee un slave et supprime les vieux fichiers
+	 * Constructeur Créee un slave
 	 * 
 	 * @param id = ID du Slave
 	 * @param dfsRootFolder = Racine des fragments de fichier
-	 * @throws RemoteException = Exeption RMI;
+	 * @throws RemoteException = Exception RMI;
 	 */
 	public SlaveImpl(int id, String dfsRootFolder) throws RemoteException {
 		super();
@@ -79,9 +79,9 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	}
 
 	/**
-	 * Méthode de répartition de fragments de fichier aux slaves fils Trouve le
-	 * millieu de la liste de fragments et la sauvegarde puis envoie
-	 * respectivement les partie gauches et droites de la liste aux slaves
+	 * Méthode de répartition de fragments de fichier aux slaves fils 
+	 * Trouve le milieu de la liste de fragments et la sauvegarde puis envoie
+	 * respectivement les parties gauches et droites de la liste aux slaves
 	 * gauche et droits
 	 * 
 	 * @param filname= nom du fichier
@@ -114,13 +114,16 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	@Override
 	public long getFileSubsize(String filename) throws RemoteException {
 		File f = new File(dfsRootFolder + File.separator + idSlave + filename);
+		//SI le fichier n'existe pas, on renvoit -1
 		if(!f.exists() || f.isDirectory()) {
 			System.out.println("Slave" + idSlave + "ta mere");
 			return -1;
 		}
+		//Si je suis une feuille, je renvoie juste la taille du fichier que je stocke
 		if(rightSlave == null) {
 			return f.length();
 		}
+		//caclule de la taille totale
 		long rightSize = rightSlave.getFileSubsize(filename);
 		long leftSize = leftSlave.getFileSubsize(filename);
 		long res = leftSize + f.length() + rightSize;
@@ -128,12 +131,12 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 	}
 
 	/**
-	 * Méthode de sauvegarde sur disque Crée un flux de sortie dans un fichier
-	 * puis écris le tableau de byte dedans
+	 * Méthode de sauvegarde sur disque 
+	 * Crée un flux de sortie dans un fichier puis écrit le tableau de byte dedans
 	 * 
 	 * @param filename = filename à sauvegarder dans la racine
 	 * @param fileContent = Tableau de byte à écrire dans le fichier
-	 * @throws IOException = Exeption en cas de problème d'écriture
+	 * @throws IOException = Exception en cas de problème d'écriture
 	 */
 	private void subSaveDisk(String filename, byte[] fileContent) throws IOException {
 		FileOutputStream stream = new FileOutputStream(dfsRootFolder + File.separator + filename);

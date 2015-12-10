@@ -18,18 +18,6 @@ import java.util.List;
 
 import fr.unice.miage.sd.tinydfs.exceptions.WrongNbSlaveException;
 
-/**
- * @author remi
- *
- */
-/**
- * @author remi
- *
- */
-/**
- * @author remi
- *
- */
 public class MasterImpl extends UnicastRemoteObject implements Master {
 
 	private String dfsRootFolder;
