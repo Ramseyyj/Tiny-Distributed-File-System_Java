@@ -16,6 +16,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Properties;
 
+import javax.xml.stream.events.StartDocument;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -131,7 +133,6 @@ public class ClientsTest {
 			File expectedFile = new File(this.getClass().getResource(
 					Constants.TEXTUAL_SAMPLE_FILE_PATH).getFile());
 			master.saveFile(expectedFile);
-			master.saveFile(expectedFile);
 			File retrievedFile = master.retrieveFile(
 					Constants.TEXTUAL_SAMPLE_FILE_NAME);
 			retrievedFile.createNewFile();
@@ -154,6 +155,8 @@ public class ClientsTest {
 			int expectedNbFiles = master.getNbSlaves() * 2 + 2;
 			Assert.assertTrue(folderFiles.length == expectedNbFiles);
 			for (File file: folderFiles) {
+				System.out.println("ts : " + testStartTime);
+				System.out.println("lm : " + file.lastModified());
 				Assert.assertTrue(file.lastModified() > testStartTime);
 			}
 		} 

@@ -35,13 +35,6 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		if (!dfsFileRootFolder.exists()) {
 			dfsFileRootFolder.mkdir();
 			System.out.println("Création dossier " + dfsFileRootFolder.getName());
-		} else {
-			File[] oldFilesSlave = dfsFileRootFolder.listFiles(new filterSlave());
-			for (File oldFile : oldFilesSlave) {
-				System.out.println("Suppression du fichier " + oldFile.getName());
-				oldFile.delete();
-			}
-
 		}
 	}
 

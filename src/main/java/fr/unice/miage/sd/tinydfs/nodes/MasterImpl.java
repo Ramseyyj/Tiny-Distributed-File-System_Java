@@ -63,13 +63,6 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 			dfsFileRootFolder.mkdir();
 			System.out.println("Création dossier " + dfsFileRootFolder.getName());
 		//Si le fichier existait déjà, on supprime son contenu
-		} else {
-			File[] oldFilesSlave = dfsFileRootFolder.listFiles();
-			for (File oldFile : oldFilesSlave) {
-				System.out.println("Suppression du fichier " + oldFile.getName());
-				oldFile.delete();
-			}
-
 		}
 		//Initialisation des champs
 		this.isBuilded = false;
