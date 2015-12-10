@@ -113,6 +113,11 @@ public class SlaveImpl extends UnicastRemoteObject implements Slave {
 		}
 	}
 	
+	/**
+	 * Methode pour récupérer la taille des fragements de fichiers contenus dans ce noeud et ces fils
+	 * @param filename
+	 * @return filenameSubSize 
+	 */
 	@Override
 	public long getFileSubsize(String filename) throws RemoteException {
 		File f = new File(dfsRootFolder + File.separator + idSlave + filename);

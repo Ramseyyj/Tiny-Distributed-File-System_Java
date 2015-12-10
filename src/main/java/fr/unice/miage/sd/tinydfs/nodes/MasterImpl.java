@@ -97,7 +97,8 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 	}
 	
 	/**
-	 * saveFile, call saveBytes
+	 * saveFile, appelle savebytes, enregistre le fichier sur le système de fichier distribué
+	 * @param File file
 	 */
 	@Override
 	public void saveFile(File file) throws RemoteException {
@@ -112,6 +113,8 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 	@Override
 	/**
 	 * Sauvegarde d'un tableau de bytes dans les slaves
+	 * @param filename
+	 * @param byte[] fileContent
 	 */
 	public void saveBytes(final String filename, final byte[] fileContent) throws RemoteException {
 		//Si premier appel client, alors on construit l'arbre
@@ -154,7 +157,9 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 	}
 
 	/**
-	 * retrieveFile : récupère les datas contenus dans les slaves et les renvoit sous forme d'un fichier
+	 * retrieveFile : récupère les datas contenus dans les slaves et les renvoit sous forme d'un fichier (appel client)
+	 * @param filename
+	 * @return File filename
 	 */
 	@Override
 	public File retrieveFile(String filename) throws RemoteException {
@@ -187,7 +192,9 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 	@Override
 	/**
 	 * retrieveBytes : recupère les morceaux de fichiers contenus dans les slaves
-	 * et les renvoit sous la forme d'un unique tableau de bytes
+	 * et les renvoit sous la forme d'un unique tableau de bytes (appel client)
+	 * @param fileName
+	 * @return bytes[] of filename
 	 */
 	public byte[] retrieveBytes(String filename) throws RemoteException {
 		//Si v'est un premier p=appel client, on construit l'arbre
@@ -225,6 +232,11 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		return getRecomposeByteArray(bLeft, bRight);
 	}
 	
+	/**
+	 * Femande au master la taille d'un fichier (appel client)
+	 * @param filename
+	 * @return size of filename
+	 */
 	@Override
 	public long getFileSize(String filename) throws RemoteException {
 		if(!isBuilded) {
@@ -251,7 +263,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 	}
 
 	/**
-	 * Fonction de construction de l'arbre
+	 * Fonction de construction de l'arbre de otre système de fichier
 	 */
 	private void buildBinaryTree() {
 		// Initialisation des références vers les slaves
