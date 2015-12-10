@@ -195,25 +195,8 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 			buildBinaryTree();
 			isBuilded = true;
 		}
-		//Si une sauvegarde est en cours sur le nom de fichier, on attend que la sauvegarde soit terminé
-		if (fileLocked.containsKey(filename)) {
+		checkTerminatedSave(filename);
 
-			for (Thread retrieve : fileLocked.get(filename)) { // Si un thread
-																// ou plusieurs
-																// threads
-																// "Save" est
-																// actuellement
-																// en train de
-																// s'exécuter
-				try {
-					retrieve.join(); // On attends la fin de ce thread "Save"
-										// (avant de continuer l'exécution du
-										// retireve)
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
 		//On récupere les bytes contenus dans les slaves
 		List<byte[]> bLeft = this.leftSlave.subRetrieve(filename);
 		//Si rien n'est récupéré, on renvoit null
@@ -226,7 +209,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 	}
 	
 	/**
-	 * Femande au master la taille d'un fichier (appel client)
+	 * Demande au master la taille d'un fichier (appel client)
 	 * @param filename
 	 * @return size of filename
 	 */
@@ -236,16 +219,7 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 			buildBinaryTree();
 		}
 		//Même méthode d'attente que dans le retrieveBytes().
-		if (fileLocked.containsKey(filename)) {
-
-			for (Thread retrieve : fileLocked.get(filename)) { 
-				try {
-					retrieve.join(); 
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
+		checkTerminatedSave(filename);
 		long leftSize = leftSlave.getFileSubsize(filename);
 		if(leftSize == -1) {
 			System.err.println("Impossible de retrouver la taille, le fichier n'existe pas");
@@ -255,8 +229,22 @@ public class MasterImpl extends UnicastRemoteObject implements Master {
 		return leftSize + rightSize;
 	}
 
+	private void checkTerminatedSave(String filename) {
+		//Si une sauvegarde est en cours sur le nom de fichier, on attend que la sauvegarde soit terminé
+		if (fileLocked.containsKey(filename)) {
+			for (Thread retrieve : fileLocked.get(filename)) { 
+				// Si un thread ou plusieurs threads  "Save" est  actuellement en train de s'exécuter
+				try {
+					// On attends la fin de ce thread "Save" (avant de continuer l'exécution du retrieve)
+					retrieve.join();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 	/**
-	 * Fonction de construction de l'arbre de otre système de fichier
+	 * Fonction de construction de l'arbre de notre système de fichier
 	 */
 	private void buildBinaryTree() {
 		// Initialisation des références vers les slaves
