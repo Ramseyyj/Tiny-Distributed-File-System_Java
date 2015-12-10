@@ -26,16 +26,14 @@ public class ClientsSizeFileTest {
 	private static String storageServiceName;
 	private static String registryHost; 
 	private static Master master;
-	private static long testStartTime;
-	
 	private final long unite = 1000;
 	
 	@BeforeClass
 	/**
-	 * Reads the properties and sets up the master.
+	 * Methode exécutée avant le lancement des tests
+	 * Lecture du fichier tests.properties pour récupérer les paramètres de connexion au Master.
 	 */
 	public static void setUp() {
-		testStartTime = System.currentTimeMillis();
 		Properties prop = new Properties();
 		InputStream input = null;
 		try {
@@ -68,7 +66,6 @@ public class ClientsSizeFileTest {
 		catch (RemoteException | NotBoundException e) {
 			e.printStackTrace();
 			System.err.println("[ClientsTestSizeFile] No master found, exiting.");
-			System.exit(1);
 		}
 		try {
 			Thread.sleep(500);
@@ -80,9 +77,12 @@ public class ClientsSizeFileTest {
 	
 	@Test
 	/**
-	 * get Size of file before to save and
-	 * Saves a file through the master, retrieves it, 
-	 * and checks that the size before operation to save is equal after the size
+	 * Méthode éxécuter après le setUp afin de verifier que la taille du fichier avant la sauvegarde est égale 
+	 * à celle après la sauvegarde
+	 * Utilise l'assertion assertEquals de JUnit pour vérifier l'égalité des tailles
+	 * @throws org.junit.Assert.fail
+	 * @throws org.junit.Assert.failNotEquals
+	 * @throws org.junit.Assert.assertEquals
 	 */
 	public void textualSizeClientTest() {
 		try {
