@@ -79,6 +79,12 @@ public interface Slave extends Remote {
 	 */
 	public List<byte[]> subRetrieve(String filename) throws RemoteException;
 	
+	/**
+	 * For a node slave, return size of all the data from all his children and himself
+	 * @param filename
+	 * @return File filename size
+	 * @throws RemoteException
+	 */
 	public long getFileSubsize(String filename) throws RemoteException;
 
 }

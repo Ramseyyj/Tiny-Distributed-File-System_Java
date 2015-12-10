@@ -131,6 +131,7 @@ public class ClientsTest {
 			File expectedFile = new File(this.getClass().getResource(
 					Constants.TEXTUAL_SAMPLE_FILE_PATH).getFile());
 			master.saveFile(expectedFile);
+			master.saveFile(expectedFile);
 			File retrievedFile = master.retrieveFile(
 					Constants.TEXTUAL_SAMPLE_FILE_NAME);
 			retrievedFile.createNewFile();
