@@ -25,6 +25,8 @@ Params : masterServiceName dfsRootFolder nbSlave
 ===================================================================================================
 ============================================ Known bugs ===========================================
 ===================================================================================================
+/!\ Lors du premier run du script python, maven a besoin de récréer son pom.xml pour être de
+nouveau fonctionnel. Le premier run échoue donc forcément. PLus de problème à partir du second run
 --> Linux/Ubuntu/Mac : l'accès à un File.lastModified() retourne une précision à la seconde.
 Le test a donc une grande probavilité d'échouer
 --> Mac : Un fichier .DS_STORE utilisés par Apple pour indexer les fichiers est automatiquement
